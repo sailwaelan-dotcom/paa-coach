@@ -1,0 +1,8 @@
+# Textes tiers (questions Google, guide communautaire GitHub sans licence) : usage personnel, ne jamais publier
+reference/local/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.env

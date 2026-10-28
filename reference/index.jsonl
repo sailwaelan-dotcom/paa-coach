@@ -1,0 +1,103 @@
+{"id": "google-q01", "source": "google-officiel", "section": "1.2", "difficulte": 2, "motifs": ["natif-vs-sur-mesure"], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "google-q02", "source": "google-officiel", "section": "3.1", "difficulte": 2, "motifs": ["deux-temps", "nom-rassurant-mauvaise-menace"], "reponse": "A", "reponse_verifiee": false, "reponse_souhail": "A"}
+{"id": "google-q03", "source": "google-officiel", "section": "3.1", "difficulte": 3, "motifs": ["natif-vs-sur-mesure", "concept-voisin"], "reponse": "A", "reponse_verifiee": false, "reponse_souhail": "A (hésitation avec D)"}
+{"id": "google-q04", "source": "google-officiel", "section": "4.1", "difficulte": 2, "motifs": ["service-detourne", "detail-temporel"], "reponse": "A", "reponse_verifiee": false, "reponse_souhail": "A"}
+{"id": "google-q05", "source": "google-officiel", "section": "5.1", "difficulte": 3, "motifs": ["etapes-multiples", "deploiement-progressif"], "reponse": "D", "reponse_verifiee": true, "reponse_souhail": "C (erreur)"}
+{"id": "google-q06", "source": "google-officiel", "section": "1.1", "difficulte": 2, "motifs": ["exigences-en-tension", "service-detourne"], "reponse": "D", "reponse_verifiee": false, "reponse_souhail": "D"}
+{"id": "google-q07", "source": "google-officiel", "section": "2.1", "difficulte": 3, "motifs": ["nom-rassurant-mauvaise-menace"], "reponse": "A", "reponse_verifiee": false, "reponse_souhail": "D (erreur)"}
+{"id": "google-q08", "source": "google-officiel", "section": "4.1", "difficulte": 2, "motifs": ["meme-famille-d-outils"], "reponse": "C", "reponse_verifiee": false, "reponse_souhail": "C"}
+{"id": "google-q09", "source": "google-officiel", "section": "5.1", "difficulte": 3, "motifs": ["catalogue-acces-trafic", "reponse-courte"], "reponse": "D", "reponse_verifiee": false, "reponse_souhail": "hésitation B/C (erreur)"}
+{"id": "google-q10", "source": "google-officiel", "section": "3.3", "difficulte": 2, "motifs": ["determinisme"], "reponse": "C", "reponse_verifiee": false, "reponse_souhail": "C"}
+{"id": "google-q11", "source": "google-officiel", "section": "5.2", "difficulte": 2, "motifs": ["une-parade-par-probleme"], "reponse": "C", "reponse_verifiee": false, "reponse_souhail": "C"}
+{"id": "google-q12", "source": "google-officiel", "section": "3.2", "difficulte": 1, "motifs": ["ancrage-rag-gere"], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": "B"}
+{"id": "google-q13", "source": "google-officiel", "section": "3.3", "difficulte": 2, "motifs": ["mcp-vs-a2a"], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": "A (hésitation avec B, erreur)"}
+{"id": "google-q14", "source": "google-officiel", "section": "4.2", "difficulte": 2, "motifs": ["choix-du-runtime", "natif-vs-sur-mesure"], "reponse": "A", "reponse_verifiee": false, "reponse_souhail": "A"}
+{"id": "google-q15", "source": "google-officiel", "section": "5.2", "difficulte": 2, "motifs": ["nom-rassurant-mauvaise-menace", "une-parade-par-probleme"], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": "C (aurait combiné B + C en réel), erreur"}
+{"id": "google-q16", "source": "google-officiel", "section": "4.2", "difficulte": 2, "motifs": ["prevenir-vs-constater"], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": "B"}
+{"id": "google-q17", "source": "google-officiel", "section": "5.1-5.2", "difficulte": 2, "motifs": ["catalogue-acces-trafic", "temps-reel"], "reponse": "D", "reponse_verifiee": false, "reponse_souhail": "D"}
+{"id": "google-q18", "source": "google-officiel", "section": "5.1-4.2", "difficulte": 1, "motifs": ["correler-vs-journaliser"], "reponse": "A", "reponse_verifiee": false, "reponse_souhail": "A"}
+{"id": "google-q19", "source": "google-officiel", "section": "5.1-5.2", "difficulte": 2, "motifs": ["natif-vs-generique"], "reponse": "C", "reponse_verifiee": false, "reponse_souhail": "C"}
+{"id": "google-q20", "source": "google-officiel", "section": "3.3", "difficulte": 2, "motifs": ["inversion"], "reponse": "D", "reponse_verifiee": false, "reponse_souhail": "D"}
+{"id": "gh-s1-q01", "source": "github-vishal-bulbule", "section": "1", "difficulte": null, "motifs": [], "reponse": "A", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s1-q02", "source": "github-vishal-bulbule", "section": "1", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s1-q03", "source": "github-vishal-bulbule", "section": "1", "difficulte": null, "motifs": [], "reponse": "C", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s1-q04", "source": "github-vishal-bulbule", "section": "1", "difficulte": null, "motifs": [], "reponse": "A", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s1-q05", "source": "github-vishal-bulbule", "section": "1", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s1-q06", "source": "github-vishal-bulbule", "section": "1", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s1-q07", "source": "github-vishal-bulbule", "section": "1", "difficulte": null, "motifs": [], "reponse": "C", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s1-q08", "source": "github-vishal-bulbule", "section": "1", "difficulte": null, "motifs": [], "reponse": "C", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s1-q09", "source": "github-vishal-bulbule", "section": "1", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s1-q10", "source": "github-vishal-bulbule", "section": "1", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s2-q01", "source": "github-vishal-bulbule", "section": "2", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s2-q02", "source": "github-vishal-bulbule", "section": "2", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s2-q03", "source": "github-vishal-bulbule", "section": "2", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s2-q04", "source": "github-vishal-bulbule", "section": "2", "difficulte": null, "motifs": [], "reponse": "C", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s2-q05", "source": "github-vishal-bulbule", "section": "2", "difficulte": null, "motifs": [], "reponse": "A", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s2-q06", "source": "github-vishal-bulbule", "section": "2", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s2-q07", "source": "github-vishal-bulbule", "section": "2", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s2-q08", "source": "github-vishal-bulbule", "section": "2", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s2-q09", "source": "github-vishal-bulbule", "section": "2", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s2-q10", "source": "github-vishal-bulbule", "section": "2", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s2-q11", "source": "github-vishal-bulbule", "section": "2", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s2-q12", "source": "github-vishal-bulbule", "section": "2", "difficulte": null, "motifs": [], "reponse": "A", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s2-q13", "source": "github-vishal-bulbule", "section": "2", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s2-q14", "source": "github-vishal-bulbule", "section": "2", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s2-q15", "source": "github-vishal-bulbule", "section": "2", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s2-q16", "source": "github-vishal-bulbule", "section": "2", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s2-q17", "source": "github-vishal-bulbule", "section": "2", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s2-q18", "source": "github-vishal-bulbule", "section": "2", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s3-q01", "source": "github-vishal-bulbule", "section": "3", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s3-q02", "source": "github-vishal-bulbule", "section": "3", "difficulte": null, "motifs": [], "reponse": "C", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s3-q03", "source": "github-vishal-bulbule", "section": "3", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s3-q04", "source": "github-vishal-bulbule", "section": "3", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s3-q05", "source": "github-vishal-bulbule", "section": "3", "difficulte": null, "motifs": [], "reponse": "C", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s3-q06", "source": "github-vishal-bulbule", "section": "3", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s3-q07", "source": "github-vishal-bulbule", "section": "3", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s3-q08", "source": "github-vishal-bulbule", "section": "3", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s3-q09", "source": "github-vishal-bulbule", "section": "3", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s3-q10", "source": "github-vishal-bulbule", "section": "3", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s3-q11", "source": "github-vishal-bulbule", "section": "3", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s3-q12", "source": "github-vishal-bulbule", "section": "3", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s3-q13", "source": "github-vishal-bulbule", "section": "3", "difficulte": null, "motifs": [], "reponse": "A", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s3-q14", "source": "github-vishal-bulbule", "section": "3", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s3-q15", "source": "github-vishal-bulbule", "section": "3", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s3-q16", "source": "github-vishal-bulbule", "section": "3", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s3-q17", "source": "github-vishal-bulbule", "section": "3", "difficulte": null, "motifs": [], "reponse": "C", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s3-q18", "source": "github-vishal-bulbule", "section": "3", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s3-q19", "source": "github-vishal-bulbule", "section": "3", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s3-q20", "source": "github-vishal-bulbule", "section": "3", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s3-q21", "source": "github-vishal-bulbule", "section": "3", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s3-q22", "source": "github-vishal-bulbule", "section": "3", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s3-q23", "source": "github-vishal-bulbule", "section": "3", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s4-q01", "source": "github-vishal-bulbule", "section": "4", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s4-q02", "source": "github-vishal-bulbule", "section": "4", "difficulte": null, "motifs": [], "reponse": "C", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s4-q03", "source": "github-vishal-bulbule", "section": "4", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s4-q04", "source": "github-vishal-bulbule", "section": "4", "difficulte": null, "motifs": [], "reponse": "C", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s4-q05", "source": "github-vishal-bulbule", "section": "4", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s4-q06", "source": "github-vishal-bulbule", "section": "4", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s4-q07", "source": "github-vishal-bulbule", "section": "4", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s4-q08", "source": "github-vishal-bulbule", "section": "4", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s4-q09", "source": "github-vishal-bulbule", "section": "4", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s4-q10", "source": "github-vishal-bulbule", "section": "4", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s4-q11", "source": "github-vishal-bulbule", "section": "4", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s4-q12", "source": "github-vishal-bulbule", "section": "4", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s5-q01", "source": "github-vishal-bulbule", "section": "5", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s5-q02", "source": "github-vishal-bulbule", "section": "5", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s5-q03", "source": "github-vishal-bulbule", "section": "5", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s5-q04", "source": "github-vishal-bulbule", "section": "5", "difficulte": null, "motifs": [], "reponse": "A", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s5-q05", "source": "github-vishal-bulbule", "section": "5", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s5-q06", "source": "github-vishal-bulbule", "section": "5", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s5-q07", "source": "github-vishal-bulbule", "section": "5", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s5-q08", "source": "github-vishal-bulbule", "section": "5", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s5-q09", "source": "github-vishal-bulbule", "section": "5", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s5-q10", "source": "github-vishal-bulbule", "section": "5", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s5-q11", "source": "github-vishal-bulbule", "section": "5", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s5-q12", "source": "github-vishal-bulbule", "section": "5", "difficulte": null, "motifs": [], "reponse": "A", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s5-q13", "source": "github-vishal-bulbule", "section": "5", "difficulte": null, "motifs": [], "reponse": "C", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s5-q14", "source": "github-vishal-bulbule", "section": "5", "difficulte": null, "motifs": [], "reponse": "A", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s5-q15", "source": "github-vishal-bulbule", "section": "5", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s5-q16", "source": "github-vishal-bulbule", "section": "5", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s5-q17", "source": "github-vishal-bulbule", "section": "5", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s5-q18", "source": "github-vishal-bulbule", "section": "5", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s5-q19", "source": "github-vishal-bulbule", "section": "5", "difficulte": null, "motifs": [], "reponse": "C", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "gh-s5-q20", "source": "github-vishal-bulbule", "section": "5", "difficulte": null, "motifs": [], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
