@@ -15,6 +15,7 @@ Préparer Souhail à l'examen PAA (inscriptions dès le 02/11/2026, examen visé
 - L'agent générateur **s'inspire des exemples** (questions officielles) pour écrire de nouvelles questions.
 - Les questions officielles sont conservées **telles quelles** comme exemples de référence.
 - Une **bibliothèque de référence** réunit les questions officielles et celles du guide communautaire GitHub ([reference/README.md](../reference/README.md)).
+- **Le mode entraînement vient en premier** (correction immédiate après chaque question, comme la séance du 28/10) ; l'examen blanc viendra ensuite (Souhail, 28/10/2026).
 
 ## 3. Proposé par Claude — à valider
 
@@ -28,7 +29,7 @@ Préparer Souhail à l'examen PAA (inscriptions dès le 02/11/2026, examen visé
 
 ## 4. Ouvert — à trancher avec Souhail
 
-1. **Mode prioritaire** : examen blanc ou entraînement en premier ? (question posée le 28/10, sans réponse)
+1. ~~Mode prioritaire~~ → **entraînement d'abord** (décidé le 28/10, voir § 2).
 2. Interface : terminal, page web, ou agent publié dans Gemini Enterprise / Agent Runtime.
 3. Modèle et budget : Gemini via crédits GEAR (35 crédits Google Skills/mois) ou Google AI Pro (10 USD/mois de crédits Cloud) — couverture réelle des appels API **[À vérifier]**.
 4. Déploiement : Agent Runtime ou Cloud Run.
