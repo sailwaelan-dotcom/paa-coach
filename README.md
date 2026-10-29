@@ -1,6 +1,6 @@
 # paa-coach
 
-**as_of** : 2026-10-28 · **Statut** : spécification en cours de validation, **aucun code ADK écrit**.
+**as_of** : 2026-10-29 · **Statut** : spécification validée, **aucun code ADK écrit**.
 
 Système multi-agents construit avec Agent Development Kit (ADK) pour préparer la certification Google Cloud « Professional Agentic Architect » (PAA), et servir de preuve d'expérience Google Cloud (agent déployé et évalué).
 
@@ -8,6 +8,7 @@ Système multi-agents construit avec Agent Development Kit (ADK) pour préparer 
 |---|---|
 | [docs/specification.md](docs/specification.md) | Ce qui est décidé, proposé, encore ouvert |
 | [reference/README.md](reference/README.md) | Bibliothèque de référence : sources, règles d'usage, index |
+| [reference/motifs.md](reference/motifs.md) | Définitions des motifs de construction des questions |
 | `reference/index.jsonl` | Index versionné de 103 questions (métadonnées, **sans énoncés**) |
 | `reference/local/` | Énoncés intégraux (Google, guide GitHub) — **exclu de Git**, jamais publié |
 
