@@ -1,0 +1,91 @@
+{
+  "eval_set_id": "trajectoires",
+  "name": "Trajectoires d'outils",
+  "description": "Vérifie que le triage route vers le bon agent et que chaque agent appelle les outils attendus, dans l'ordre (appels supplémentaires tolérés, arguments ignorés).",
+  "eval_cases": [
+    {
+      "eval_id": "routage_entrainement",
+      "conversation": [
+        {
+          "invocation_id": "routage_entrainement-1",
+          "user_content": {
+            "role": "user",
+            "parts": [{"text": "Je veux m'entraîner sur la sécurité des agents, donne-moi une question."}]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {"name": "transfer_to_agent", "args": {"agent_name": "coach_agent"}},
+              {"name": "scenario_challenger", "args": {}}
+            ]
+          }
+        }
+      ],
+      "session_input": {"app_name": "paa_coach", "user_id": "eval", "state": {}}
+    },
+    {
+      "eval_id": "routage_revue_code",
+      "conversation": [
+        {
+          "invocation_id": "routage_revue_code-1",
+          "user_content": {
+            "role": "user",
+            "parts": [{"text": "Tu peux relire mon code ADK ?\n\n```python\nfrom google.adk.agents import LlmAgent\n\nroot_agent = LlmAgent(name=\"helper\", model=\"gemini-3.5-flash\", instruction=\"Aide l'utilisateur.\")\n```"}]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {"name": "transfer_to_agent", "args": {"agent_name": "code_reviewer"}},
+              {"name": "auditer_code_adk", "args": {}}
+            ]
+          }
+        }
+      ],
+      "session_input": {"app_name": "paa_coach", "user_id": "eval", "state": {}}
+    },
+    {
+      "eval_id": "enregistrement_reponse",
+      "conversation": [
+        {
+          "invocation_id": "enregistrement_reponse-1",
+          "user_content": {
+            "role": "user",
+            "parts": [{"text": "Ma réponse à la question en cours : B"}]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {"name": "transfer_to_agent", "args": {"agent_name": "coach_agent"}},
+              {"name": "enregistrer_reponse", "args": {"reponse": "B"}}
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "paa_coach",
+        "user_id": "eval",
+        "state": {
+          "derniere_question": {
+            "id": "eval-q1",
+            "section": "5.1",
+            "motifs": ["concept-voisin"],
+            "difficulte": 2,
+            "enonce": "A bank runs an ADK agent on Cloud Run. Security asks to block prompt injection attempts in user messages before they reach the model, without changing the agent code. What should the architect recommend?",
+            "options": {
+              "A": "Create a VPC Service Controls perimeter around Vertex AI.",
+              "B": "Enable Model Armor with a prompt template through the ADK Model Armor plugin.",
+              "C": "Put Cloud Armor in front of the Cloud Run service.",
+              "D": "Add a regular expression filter in the agent instruction."
+            },
+            "reponse": "B",
+            "explication": "Model Armor inspects prompts and responses for injection and jailbreak attempts; the ADK plugin applies it without changing agent logic.",
+            "pieges": {
+              "A": "VPC-SC prevents data exfiltration across perimeters; it does not inspect prompt content.",
+              "C": "Cloud Armor filters HTTP traffic at the load balancer, not the semantics of a prompt.",
+              "D": "Instructions are not a security control and require changing the agent."
+            },
+            "sources_doc": ["https://cloud.google.com/security-command-center/docs/model-armor-overview"],
+            "a_verifier": false
+          }
+        }
+      }
+    }
+  ]
+}

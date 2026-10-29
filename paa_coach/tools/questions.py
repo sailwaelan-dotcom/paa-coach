@@ -309,6 +309,9 @@ def enregistrer_reponse(reponse: str, tool_context: ToolContext) -> dict[str, An
 
         tool_context.state["user:validated_modules"] = modules_valides
 
+        # La question est consommée : empêche un double comptage et une notation sur une question périmée
+        tool_context.state["derniere_question"] = None
+
         return {
             "status": "ok",
             "correct": est_juste,

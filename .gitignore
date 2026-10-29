@@ -14,3 +14,6 @@ paa_coach_sessions.db
 
 # Config Claude Code locale (skills, réglages perso)
 .claude/
+
+# Résultats locaux de adk eval
+paa_coach/.adk/

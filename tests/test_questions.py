@@ -261,3 +261,21 @@ def test_enregistrer_reponse_regle_80_pourcent_validation(
         enregistrer_reponse("B", mock_tool_context)  # Fausses réponses
 
     assert "2.1" not in mock_tool_context.state["user:validated_modules"]
+
+
+def test_enregistrer_reponse_question_consommee_une_seule_fois(
+    mock_tool_context: MockToolContext
+) -> None:
+    mock_tool_context.state["derniere_question"] = {
+        "id": "q1",
+        "reponse": "B",
+        "section": "3.1",
+        "motifs": [],
+    }
+    assert enregistrer_reponse("B", mock_tool_context)["status"] == "ok"
+
+    # Une seconde réponse à la même question ne doit pas être comptée
+    res = enregistrer_reponse("B", mock_tool_context)
+    assert res["status"] == "error"
+    assert "Aucune question" in res["message"]
+    assert len(mock_tool_context.state["user:historique"]) == 1
