@@ -7,14 +7,28 @@ from typing import Any
 
 from google.adk.agents import LlmAgent, LoopAgent
 from google.adk.apps import App
+from google.adk.models import Gemini
 from google.adk.tools import McpToolset
 from google.adk.tools.agent_tool import AgentTool
 from google.adk.tools.mcp_tool.mcp_toolset import StreamableHTTPConnectionParams
+from google.genai.types import HttpRetryOptions
 
 from . import config, prompts
 from .tools import auditer_code_adk, chercher_exemples, enregistrer_reponse, valider_et_publier
 
 logger = logging.getLogger(__name__)
+
+# Modèle Gemini unifié avec politique de retry automatique sur 429 (Resource Exhausted)
+adk_model = Gemini(
+    model=config.PAA_MODEL,
+    retry_options=HttpRetryOptions(
+        attempts=5,
+        initial_delay=2.0,
+        max_delay=30.0,
+        exp_base=2.0,
+        http_status_codes=[429, 503],
+    ),
+)
 
 
 def _mcp_header_provider(readonly_ctx: Any) -> dict[str, str]:
@@ -66,7 +80,7 @@ if mcp_toolset is not None:
 question_writer = LlmAgent(
     name="question_writer",
     description="Rédige une question d'architecture PAA inédite au format JSON pour une section et un motif donnés.",
-    model=config.PAA_MODEL,
+    model=adk_model,
     instruction=prompts.QUESTION_WRITER_INSTRUCTION,
     tools=writer_tools,
 )
@@ -74,7 +88,7 @@ question_writer = LlmAgent(
 question_checker = LlmAgent(
     name="question_checker",
     description="Valide la pertinence technique d'une question PAA et appelle valider_et_publier.",
-    model=config.PAA_MODEL,
+    model=adk_model,
     instruction=prompts.QUESTION_CHECKER_INSTRUCTION,
     tools=checker_tools,
     output_key="temp:critique",
@@ -91,7 +105,7 @@ scenario_challenger = LoopAgent(
 coach_agent = LlmAgent(
     name="coach_agent",
     description="Entraîne Souhail avec des questions d'architecture PAA, valide ses réponses et suit ses progrès.",
-    model=config.PAA_MODEL,
+    model=adk_model,
     instruction=prompts.COACH_INSTRUCTION,
     tools=[
         AgentTool(agent=scenario_challenger),
@@ -103,7 +117,7 @@ coach_agent = LlmAgent(
 code_reviewer = LlmAgent(
     name="code_reviewer",
     description="Audite et relit du code Google ADK Python (labs pratiques) selon les critères de qualité et d'architecture.",
-    model=config.PAA_MODEL,
+    model=adk_model,
     instruction=prompts.CODE_REVIEWER_INSTRUCTION,
     tools=reviewer_tools,
 )
@@ -112,7 +126,7 @@ code_reviewer = LlmAgent(
 triage_agent = LlmAgent(
     name="triage_agent",
     description="Agent d'accueil racine, résume l'avancement et oriente vers le coach d'examen ou la revue de code.",
-    model=config.PAA_MODEL,
+    model=adk_model,
     instruction=prompts.TRIAGE_INSTRUCTION,
     sub_agents=[coach_agent, code_reviewer],
 )
