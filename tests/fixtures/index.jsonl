@@ -1,0 +1,4 @@
+{"id": "fixture-q01", "source": "test-mock-source", "section": "3.1", "difficulte": 2, "motifs": ["concept-voisin"], "reponse": "C", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "fixture-q02", "source": "test-mock-source", "section": "3.2", "difficulte": 1, "motifs": ["natif-vs-sur-mesure"], "reponse": "A", "reponse_verifiee": true, "reponse_souhail": null}
+{"id": "fixture-q03", "source": "test-mock-source", "section": "5.1", "difficulte": 3, "motifs": ["service-detourne"], "reponse": "B", "reponse_verifiee": false, "reponse_souhail": null}
+{"id": "fixture-q04", "source": "test-mock-source", "section": "1", "difficulte": 2, "motifs": ["deux-temps"], "reponse": "D", "reponse_verifiee": false, "reponse_souhail": null}

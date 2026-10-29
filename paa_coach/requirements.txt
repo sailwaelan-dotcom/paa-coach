@@ -1,0 +1,4 @@
+# Dépendances coeur de paa-coach
+# google-adk 2.13.0 avec extras pour MCP (Developer Knowledge) et GCP (Model Armor, Tracing)
+google-adk[mcp,gcp]==2.13.0
+pytest>=9.0.0
