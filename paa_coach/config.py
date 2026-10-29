@@ -12,13 +12,13 @@ from typing import Final
 
 # Modèle par défaut sur Vertex AI
 # Source : https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models
-# gemini-2.5-flash est le modèle Flash stable de référence combinant raisonnement hybride,
-# latence ultra-faible et capacités d'outils avancées sur Vertex AI.
-DEFAULT_MODEL: Final[str] = "gemini-2.5-flash"
+# gemini-3.5-flash est le modèle Flash stable de référence combinant raisonnement hybride,
+# latence ultra-faible et capacités d'outils (Function Calling) validées sur Vertex AI.
+DEFAULT_MODEL: Final[str] = "gemini-3.5-flash"
 
 PAA_MODEL: str = os.getenv("PAA_MODEL", DEFAULT_MODEL)
 GOOGLE_CLOUD_PROJECT: str = os.getenv("GOOGLE_CLOUD_PROJECT", "")
-GOOGLE_CLOUD_LOCATION: str = os.getenv("GOOGLE_CLOUD_LOCATION", "europe-west1")
+GOOGLE_CLOUD_LOCATION: str = os.getenv("GOOGLE_CLOUD_LOCATION", "global")
 
 # Forcer Vertex AI pour le SDK google-genai / ADK
 os.environ.setdefault("GOOGLE_GENAI_USE_VERTEXAI", "TRUE")
