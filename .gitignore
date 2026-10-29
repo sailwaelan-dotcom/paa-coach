@@ -1,11 +1,16 @@
 # Textes tiers (questions Google, guide communautaire GitHub sans licence) : usage personnel, ne jamais publier
 reference/local/
+paa_coach/data/
 
-# Python
+# Python & environnement
 __pycache__/
 *.pyc
 .venv/
 .env
+
+# Données locales de session
+*.db
+paa_coach_sessions.db
 
 # Config Claude Code locale (skills, réglages perso)
 .claude/
