@@ -14,6 +14,7 @@ from google.adk.tools.mcp_tool.mcp_toolset import StreamableHTTPConnectionParams
 from google.genai.types import HttpRetryOptions
 
 from . import config, prompts
+from .callbacks import apres_generation_question, avant_generation_question
 from .tools import auditer_code_adk, chercher_exemples, enregistrer_reponse, valider_et_publier
 
 logger = logging.getLogger(__name__)
@@ -39,12 +40,18 @@ def _mcp_header_provider(readonly_ctx: Any) -> dict[str, str]:
     else:
         try:
             import google.auth
+            import google.oauth2.credentials
             from google.auth.transport.requests import Request
             creds, _ = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
             if not creds.valid:
                 creds.refresh(Request())
             if creds.token:
                 headers["Authorization"] = f"Bearer {creds.token}"
+            # Identifiants utilisateur (usage local) : l'API exige un projet de quota,
+            # sinon chaque recherche échoue. Inutile pour le compte de service Cloud Run.
+            quota_project = getattr(creds, "quota_project_id", None) or config.GOOGLE_CLOUD_PROJECT
+            if isinstance(creds, google.oauth2.credentials.Credentials) and quota_project:
+                headers["x-goog-user-project"] = quota_project
         except Exception as e:
             logger.debug("Aucun jeton ADC généré pour MCP: %s", e)
     return headers
@@ -111,6 +118,8 @@ coach_agent = LlmAgent(
         AgentTool(agent=scenario_challenger),
         enregistrer_reponse,
     ],
+    before_tool_callback=avant_generation_question,
+    after_tool_callback=apres_generation_question,
 )
 
 # 4. Expert relecteur de code ADK

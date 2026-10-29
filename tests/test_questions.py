@@ -279,3 +279,25 @@ def test_enregistrer_reponse_question_consommee_une_seule_fois(
     assert res["status"] == "error"
     assert "Aucune question" in res["message"]
     assert len(mock_tool_context.state["user:historique"]) == 1
+
+
+def test_valider_et_publier_rejette_bonne_reponse_nettement_plus_longue(
+    mock_tool_context: MockToolContext
+) -> None:
+    q = _creer_question_valide()
+    q["options"]["C"] = (
+        "Option Gamma correct answer with many extra architecture details that"
+        " make it stand out from every other choice"
+    )
+    res = valider_et_publier(json.dumps(q), mock_tool_context)
+    assert res["status"] == "rejected"
+    assert any("plus longue" in err for err in res["errors"])
+    assert "derniere_question" not in mock_tool_context.state
+
+
+def test_valider_et_publier_accepte_longueurs_comparables(
+    mock_tool_context: MockToolContext
+) -> None:
+    # La bonne réponse est la plus longue, mais dans la marge tolérée
+    res = valider_et_publier(json.dumps(_creer_question_valide()), mock_tool_context)
+    assert res["status"] == "ok"

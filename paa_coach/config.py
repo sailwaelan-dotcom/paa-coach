@@ -121,3 +121,9 @@ ALLOWED_DOC_DOMAINS: Final[frozenset[str]] = frozenset({
 
 # Seuil anti-copie (difflib SequenceMatcher ratio maximal autorisé)
 ANTI_COPIE_MAX_RATIO: Final[float] = 0.6
+
+# Source des questions d'exemple officielles Google, prioritaires comme modèles de style
+SOURCE_OFFICIELLE: Final[str] = "google-officiel"
+
+# Longueur maximale de la bonne réponse, relativement au piège le plus long
+LONGUEUR_OPTION_MAX_RATIO: Final[float] = 1.4

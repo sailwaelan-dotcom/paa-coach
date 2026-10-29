@@ -166,9 +166,23 @@ def chercher_exemples(
             else:
                 filtre_actif.update({"difficulte_relachee": True})
 
-        # Tirage au sort borné par limite
-        nb_a_tirer = min(limite, len(selected))
-        echantillon = random.sample(selected, nb_a_tirer) if nb_a_tirer > 0 else []
+        # Tirage au sort borné par limite, questions officielles d'abord : elles donnent
+        # le niveau de l'examen (choix d'architecture), le guide communautaire est plus technique
+        officielles = [q for q in selected if q.get("source") == config.SOURCE_OFFICIELLE]
+        autres = [q for q in selected if q.get("source") != config.SOURCE_OFFICIELLE]
+        random.shuffle(officielles)
+        random.shuffle(autres)
+        echantillon = (officielles + autres)[:max(limite, 0)]
+
+        # Sans question officielle dans la sélection, une officielle d'une autre section
+        # sert d'ancre de style
+        ancre_id: str | None = None
+        if echantillon and not officielles:
+            ancres = [q for q in all_questions if q.get("source") == config.SOURCE_OFFICIELLE]
+            if ancres:
+                ancre = random.choice(ancres)
+                ancre_id = ancre["id"]
+                echantillon = echantillon[:max(limite - 1, 0)] + [ancre]
 
         # Formater les exemples en recopiant fidèlement reponse_verifiee
         resultats: list[dict[str, Any]] = []
@@ -182,6 +196,7 @@ def chercher_exemples(
                 "motifs": q.get("motifs", []),
                 "source": q.get("source"),
                 "reponse_verifiee": q.get("reponse_verifiee", False),
+                "ancre_style": q["id"] == ancre_id,
             })
 
         return {

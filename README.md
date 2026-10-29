@@ -1,6 +1,6 @@
 # paa-coach — Coach multi-agents ADK pour la certification PAA
 
-**as_of** : 2026-10-29 · **Statut** : déployé sur Cloud Run (critères 0 à 6 de la spécification). Les outils sont couverts par 33 tests unitaires, le comportement des agents par 8 cas d'évaluation `adk eval` (section 5.2).
+**as_of** : 2026-10-29 · **Statut** : déployé sur Cloud Run (critères 0 à 6 de la spécification). Les outils sont couverts par 46 tests unitaires, le comportement des agents par 8 cas d'évaluation `adk eval` (section 5.2).
 
 Projet personnel construit avec **Google Agent Development Kit (ADK 2.13.0)** en Python pour préparer la certification Google Cloud **« Professional Agentic Architect » (PAA)**. Il sert aussi d'exemple concret des motifs d'architecture abordés à l'examen.
 
@@ -250,7 +250,7 @@ Grâce à l'option `--otel_to_cloud` passée lors du déploiement :
 - **Persistance sur Cloud Run** : Le state en mémoire vit dans le conteneur unique (`--max-instances=1`) et est réinitialisé si l'instance s'éteint après inactivité. Pour un entraînement suivi sur plusieurs jours, l'usage local avec SQLite (`--session_service_uri`) est recommandé.
 - **Mode entraînement exclusivement** : Conformément à la spécification, seul le mode entraînement question par question est implémenté ; le simulateur d'examen blanc complet en temps limité (3 h) est hors périmètre.
 - **Seuil du filtre d'injection Model Armor** : réglé sur `HIGH` (29/10/2026). Au seuil `MEDIUM_AND_ABOVE`, une demande de revue suivie de code ADK collé sans balises était bloquée à tort ; les injections testées (anglais, français, formulation discrète) sont détectées avec une confiance `HIGH` et restent bloquées. Contrepartie : une injection détectée seulement avec une confiance moyenne passerait, ce qui est acceptable derrière IAP pour un usage individuel.
-- **Ancrage documentaire non vérifié en évaluation** : pendant `adk eval`, la connexion au serveur MCP Developer Knowledge est fermée entre les cas (même cause probable que Model Armor) ; les questions évaluées n'ont donc pas été générées avec la recherche documentaire. Le serveur répond normalement en direct (HTTP 200).
+- **Recherche documentaire en évaluation** : pendant `adk eval`, la connexion au serveur MCP Developer Knowledge est fermée entre les cas (même cause probable que Model Armor) ; les questions évaluées sont donc générées sans recherche documentaire. En usage normal, local ou sur Cloud Run, la recherche fonctionne : avec des identifiants utilisateur, l'agent envoie le projet de quota (`x-goog-user-project`) exigé par l'API.
 - **Utilisation sans bibliothèque privée** : En l'absence des fichiers locaux `questions.jsonl`, `chercher_exemples` s'appuie sur l'index versionné pour guider le style et la répartition par motif, permettant à quiconque de déployer sa propre instance.
 
 ---

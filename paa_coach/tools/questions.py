@@ -146,6 +146,19 @@ def valider_et_publier(question_json: str, tool_context: ToolContext) -> dict[st
                     if not str(v).strip():
                         errors.append(f"L'explication du piège pour l'option {k} ne peut être vide.")
 
+        # La bonne réponse ne doit pas se repérer à sa longueur
+        if isinstance(options, dict) and reponse in options and not errors:
+            longueur_bonne = len(str(options[reponse]).strip())
+            longueur_max_pieges = max(
+                len(str(v).strip()) for k, v in options.items() if k != reponse
+            )
+            if longueur_bonne > config.LONGUEUR_OPTION_MAX_RATIO * longueur_max_pieges:
+                errors.append(
+                    f"La bonne réponse est nettement plus longue que les pièges "
+                    f"({longueur_bonne} contre {longueur_max_pieges} caractères au plus) : "
+                    "équilibre la longueur et le niveau de détail des 4 options."
+                )
+
         explication = str(data["explication"]).strip()
         if not explication:
             errors.append("Le champ 'explication' ne peut être vide.")
@@ -214,6 +227,8 @@ def valider_et_publier(question_json: str, tool_context: ToolContext) -> dict[st
             "sources_doc": data["sources_doc"],
             "a_verifier": a_verifier,
         }
+        # Lue par le callback du coach : la question affichée est celle qui sera notée
+        tool_context.state["question_publique"] = public_question
 
         return {"status": "ok", "question": public_question}
 

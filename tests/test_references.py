@@ -80,3 +80,34 @@ def test_chercher_exemples_reponse_verifiee_fidele() -> None:
     by_id = {ex["id"]: ex for ex in res["exemples"]}
     assert by_id["fixture-q01"]["reponse_verifiee"] is False
     assert by_id["fixture-q02"]["reponse_verifiee"] is True
+
+
+def _q(qid: str, source: str, section: str) -> dict:
+    return {"id": qid, "source": source, "section": section, "enonce": qid, "options": {}, "motifs": []}
+
+
+def test_chercher_exemples_priorise_les_questions_officielles(monkeypatch: pytest.MonkeyPatch) -> None:
+    base = [_q(f"com-{i}", "github-vishal-bulbule", "3.1") for i in range(6)]
+    base += [_q("off-1", "google-officiel", "3.1"), _q("off-2", "google-officiel", "3.2")]
+    monkeypatch.setattr("paa_coach.tools.references._load_reference_data", lambda _d: base)
+    for _ in range(10):
+        ids = {ex["id"] for ex in chercher_exemples(section="3", limite=3)["exemples"]}
+        assert {"off-1", "off-2"} <= ids
+
+
+def test_chercher_exemples_ajoute_une_ancre_officielle(monkeypatch: pytest.MonkeyPatch) -> None:
+    base = [_q(f"com-{i}", "github-vishal-bulbule", "2.1") for i in range(5)]
+    base += [_q("off-5", "google-officiel", "5.1")]
+    monkeypatch.setattr("paa_coach.tools.references._load_reference_data", lambda _d: base)
+    res = chercher_exemples(section="2.1", limite=3)
+    assert res["count"] == 3
+    ancres = [ex for ex in res["exemples"] if ex.get("ancre_style")]
+    assert [ex["id"] for ex in ancres] == ["off-5"]
+
+
+def test_chercher_exemples_sans_question_officielle(monkeypatch: pytest.MonkeyPatch) -> None:
+    base = [_q(f"com-{i}", "github-vishal-bulbule", "2.1") for i in range(5)]
+    monkeypatch.setattr("paa_coach.tools.references._load_reference_data", lambda _d: base)
+    res = chercher_exemples(section="2.1", limite=3)
+    assert res["count"] == 3
+    assert not any(ex.get("ancre_style") for ex in res["exemples"])
