@@ -191,7 +191,7 @@ bash scripts/setup_gcp.sh
 ```
 
 ### 6.2 Étape 2 : Déploiement du conteneur (`deploy.sh`)
-Le script de déploiement compile les données, déploie le conteneur Cloud Run avec l'UI Web ADK, active l'export OpenTelemetry vers Cloud Trace et autorise l'agent de service IAP à invoquer Cloud Run :
+Le script de déploiement compile les données, déploie le conteneur Cloud Run avec l'UI Web ADK, active l'export OpenTelemetry vers Cloud Trace, active IAP sur le service et n'y autorise que `PAA_ALLOWED_MEMBER` :
 ```bash
 bash scripts/deploy.sh
 ```
@@ -227,7 +227,7 @@ Model Armor protège l'application contre les attaques par injection de prompt e
    > **Comportement en cas d'échec** : si `ModelArmorPlugin` ne peut pas être initialisé, l'application démarre **sans filtrage** et l'indique seulement par un avertissement dans les journaux. Vérifiez la présence du message `ModelArmorPlugin configuré avec succès.` après chaque déploiement.
 
 ### 7.2 Contrôle d'Accès IAP (Critère 4)
-- **Activation** : IAP est activé sur le service Cloud Run depuis la console (Sécurité > Identity-Aware Proxy) ; `deploy.sh` ne l'active pas. Après chaque redéploiement, vérifiez qu'une requête anonyme est toujours redirigée vers la connexion Google (HTTP 302).
+- **Activation** : `deploy.sh` active IAP sur le service (`gcloud run services update --iap`) et accorde `roles/iap.httpsResourceAccessor` à `PAA_ALLOWED_MEMBER` dans la politique IAP (`gcloud iap web add-iam-policy-binding --resource-type=cloud-run`). Après chaque déploiement, une requête anonyme doit être redirigée vers la connexion Google (HTTP 302).
 - **Accès public anonyme** : Une requête non authentifiée (`curl -I https://<service-url>.run.app`) est redirigée vers la connexion Google (HTTP 302).
 - **Accès nominatif** : Seul le compte déclaré dans `PAA_ALLOWED_MEMBER` disposant du rôle `roles/iap.httpsResourceAccessor` peut afficher l'application.
 - **Identité d'exécution** : Le service s'exécute sous `paa-coach-run`, jamais sous le compte Compute Engine par défaut.
@@ -244,6 +244,7 @@ Grâce à l'option `--otel_to_cloud` passée lors du déploiement :
 
 ## 9. Limites Connues & Périmètre
 
+- **Interface de développement ADK Web en production** : le service est déployé avec `--with_ui`, l'interface de développement d'ADK. Elle donne accès à toutes les sessions et à des outils de développement (édition du state, évaluations, traces). C'est acceptable ici parce qu'IAP n'admet qu'un seul utilisateur, qui ne voit donc que ses propres données. Pour plusieurs utilisateurs, il faudrait déployer l'API seule (sans `--with_ui`) derrière une interface dédiée.
 - **Persistance sur Cloud Run** : Le state en mémoire vit dans le conteneur unique (`--max-instances=1`) et est réinitialisé si l'instance s'éteint après inactivité. Pour un entraînement suivi sur plusieurs jours, l'usage local avec SQLite (`--session_service_uri`) est recommandé.
 - **Mode entraînement exclusivement** : Conformément à la spécification, seul le mode entraînement question par question est implémenté ; le simulateur d'examen blanc complet en temps limité (3 h) est hors périmètre.
 - **Seuil du filtre d'injection Model Armor** : réglé sur `HIGH` (29/10/2026). Au seuil `MEDIUM_AND_ABOVE`, une demande de revue suivie de code ADK collé sans balises était bloquée à tort ; les injections testées (anglais, français, formulation discrète) sont détectées avec une confiance `HIGH` et restent bloquées. Contrepartie : une injection détectée seulement avec une confiance moyenne passerait, ce qui est acceptable derrière IAP pour un usage individuel.

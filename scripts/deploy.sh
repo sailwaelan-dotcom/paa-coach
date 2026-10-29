@@ -83,9 +83,16 @@ adk deploy cloud_run \
     --max-instances=1 \
     --timeout=300
 
-# 5. Consolidation et verrouillage de la sécurité IAP
+# 5. Activation d'IAP et autorisations d'accès
 echo ""
-echo "-> Étape 3 : Configuration des autorisations d'accès IAP..."
+echo "-> Étape 3 : Activation d'IAP et autorisations d'accès..."
+echo "  - Activation d'IAP sur le service Cloud Run..."
+gcloud run services update "${SERVICE_NAME}" \
+    --project="${GOOGLE_CLOUD_PROJECT}" \
+    --region="${CLOUD_RUN_REGION}" \
+    --iap \
+    --quiet >/dev/null
+
 PROJECT_NUMBER=$(gcloud projects describe "${GOOGLE_CLOUD_PROJECT}" --format="value(projectNumber)")
 IAP_SA="serviceAccount:service-${PROJECT_NUMBER}@gcp-sa-iap.iam.gserviceaccount.com"
 
@@ -98,11 +105,13 @@ gcloud run services add-iam-policy-binding "${SERVICE_NAME}" \
     --role="roles/run.invoker" \
     --quiet >/dev/null
 
-# L'utilisateur autorisé reçoit l'accès IAP
+# L'utilisateur autorisé reçoit l'accès IAP (politique IAP, pas celle du service Cloud Run)
 if [[ -n "${PAA_ALLOWED_MEMBER:-}" ]]; then
     echo "  - Attribution de roles/iap.httpsResourceAccessor à ${PAA_ALLOWED_MEMBER}..."
-    gcloud run services add-iam-policy-binding "${SERVICE_NAME}" \
+    gcloud iap web add-iam-policy-binding \
         --project="${GOOGLE_CLOUD_PROJECT}" \
+        --resource-type=cloud-run \
+        --service="${SERVICE_NAME}" \
         --region="${CLOUD_RUN_REGION}" \
         --member="${PAA_ALLOWED_MEMBER}" \
         --role="roles/iap.httpsResourceAccessor" \
@@ -127,7 +136,7 @@ echo ""
 echo "Procédure de test de sécurité (Critère 4) :"
 echo "1. Accès refusé pour les utilisateurs anonymes :"
 echo "   curl -I ${SERVICE_URL}"
-echo "   -> Doit renvoyer HTTP 401 ou 403 Forbidden / Redirection IAP."
+echo "   -> Doit renvoyer HTTP 302 (redirection vers la connexion Google par IAP)."
 echo ""
 echo "2. Accès nominal pour Souhail :"
 echo "   Ouvrez ${SERVICE_URL} dans votre navigateur connecté avec ${PAA_ALLOWED_MEMBER:-votre compte Google autorisé}."
