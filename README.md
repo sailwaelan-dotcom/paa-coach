@@ -4,6 +4,8 @@
 
 Projet personnel construit avec **Google Agent Development Kit (ADK 2.13.0)** en Python pour préparer la certification Google Cloud **« Professional Agentic Architect » (PAA)**. Il sert aussi d'exemple concret des motifs d'architecture abordés à l'examen.
 
+**Méthode** : spécification et architecture rédigées par Souhail, code écrit par l'agent Antigravity, puis relu, corrigé et évalué avec Claude Code (tests unitaires, `adk eval`, vérifications en production).
+
 ---
 
 ## 1. Intention & Deux Publics

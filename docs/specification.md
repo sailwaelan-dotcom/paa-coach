@@ -1,6 +1,6 @@
 # paa-coach — spécification
 
-**as_of** : 2026-10-29 · **Statut** : **validée par Souhail le 29/10/2026**, à coder par un agent (DeepSeek v4.1) à partir de ce seul document.
+**as_of** : 2026-10-29 · **Statut** : **validée par Souhail le 29/10/2026**, à coder par un agent (Antigravity) à partir de ce seul document.
 
 > **Pour l'agent qui code** : lis tout ce document avant d'écrire une ligne. Les API ADK citées ici ont été vérifiées sur adk.dev le 29/10/2026 ; tes connaissances sont probablement plus anciennes (ADK 2.x, `App`, `ModelArmorPlugin`). **Quand ce document et ta mémoire divergent, ce document l'emporte. Quand tu doutes d'une API, lis le code installé** (`python -c "import google.adk, inspect; ..."`) ou `adk <commande> --help`, **n'invente pas**. Ne versionne jamais rien depuis `reference/local/`.
 
@@ -29,7 +29,7 @@ Deux publics, un seul produit :
 - **Accès : Souhail seul**, sur son propre compte Google Cloud ; mais le dépôt est **public** : toute la configuration est documentée et paramétrable pour qu'une autre personne déploie sa propre instance (29/10/2026).
 - **Sécurité d'accès de niveau état de l'art**, proportionnée à un usage personnel (§ 7).
 - **Source de vérité des réponses : la documentation officielle de Google** sur les services (29/10/2026) → serveur MCP officiel **Developer Knowledge** (§ 6.5).
-- Méthode : spec dans le dépôt → code écrit par DeepSeek v4.1 → test local → déploiement sur le compte Google Cloud personnel de Souhail.
+- Méthode : spec dans le dépôt → code écrit par Antigravity → test local → déploiement sur le compte Google Cloud personnel de Souhail.
 
 ### Choix de Claude, acceptés par Souhail le 29/10/2026
 
