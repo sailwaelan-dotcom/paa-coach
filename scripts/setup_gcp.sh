@@ -23,13 +23,19 @@ if [[ -z "${GOOGLE_CLOUD_PROJECT:-}" ]]; then
     exit 1
 fi
 
-LOCATION="${GOOGLE_CLOUD_LOCATION:-europe-west1}"
+# Model Armor est régional (pas de "global") : région tirée du template déjà
+# configuré dans .env, sinon MODEL_ARMOR_LOCATION, sinon us-central1
+if [[ "${PAA_MODEL_ARMOR_PROMPT_TEMPLATE:-}" =~ /locations/([^/]+)/ ]]; then
+    MODEL_ARMOR_LOCATION="${BASH_REMATCH[1]}"
+else
+    MODEL_ARMOR_LOCATION="${MODEL_ARMOR_LOCATION:-us-central1}"
+fi
 SA_NAME="paa-coach-run"
 SA_EMAIL="${SA_NAME}@${GOOGLE_CLOUD_PROJECT}.iam.gserviceaccount.com"
 
 echo "=== Préparation Google Cloud pour paa-coach ==="
 echo "Projet   : ${GOOGLE_CLOUD_PROJECT}"
-echo "Région   : ${LOCATION}"
+echo "Région Model Armor : ${MODEL_ARMOR_LOCATION}"
 echo "Compte SA: ${SA_EMAIL}"
 echo "==============================================="
 
@@ -94,11 +100,11 @@ echo "Agent de service IAP : ${IAP_SA}"
 # 6. Modèles Model Armor (Templates)
 echo ""
 echo "-> Modèles Model Armor :"
-echo "Pour créer les templates de filtrage Model Armor dans la région ${LOCATION} :"
+echo "Pour créer les templates de filtrage Model Armor dans la région ${MODEL_ARMOR_LOCATION} :"
 echo "1. Dans la console Google Cloud : Sécurité > Model Armor > Modèles (Templates) > Créer"
-echo "   - Template prompt   : 'paa-prompt-filter' (filtres: Injection de prompt, CSAM, Toxicité)"
-echo "   - Template réponse  : 'paa-response-filter' (filtres: Fuite de données sensibles / PII)"
-echo "   Notez les chemins générés : projects/${GOOGLE_CLOUD_PROJECT}/locations/${LOCATION}/templates/<nom>"
+echo "   - Template prompt   : 'paa-prompt-filter' (filtres : injection de prompt et jailbreak au seuil Élevé, URL malveillantes)"
+echo "   - Template réponse  : 'paa-response-filter' (filtres : données sensibles (SDP de base), URL malveillantes)"
+echo "   Notez les chemins générés : projects/${GOOGLE_CLOUD_PROJECT}/locations/${MODEL_ARMOR_LOCATION}/templates/<nom>"
 echo "   Renseignez-les dans votre .env : PAA_MODEL_ARMOR_PROMPT_TEMPLATE et PAA_MODEL_ARMOR_RESPONSE_TEMPLATE"
 
 # 7. Résumé des étapes manuelles indispensables
