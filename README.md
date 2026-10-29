@@ -263,3 +263,9 @@ Grâce à l'option `--otel_to_cloud` passée lors du déploiement :
 - [Guide d'examen Google Cloud Professional Agentic Architect (PAA)](https://services.google.com/fh/files/misc/professional_agentic_architect_exam_guide_english.pdf)
 - [Google Developer Knowledge API & Serveur MCP](https://developers.googleblog.com/introducing-the-developer-knowledge-api-and-mcp-server/)
 - [Sécurisation de Cloud Run avec Identity-Aware Proxy (IAP)](https://docs.cloud.google.com/run/docs/securing/identity-aware-proxy-cloud-run?hl=en)
+
+---
+
+## 11. Licence
+
+Code publié sous licence [MIT](LICENSE). La licence couvre le code et la documentation de ce dépôt, pas les contenus tiers (questions d'exemple Google, guide communautaire) : ceux-ci restent hors du dépôt, dans `reference/local/`.
