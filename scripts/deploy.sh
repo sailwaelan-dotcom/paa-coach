@@ -23,18 +23,20 @@ if [[ -z "${GOOGLE_CLOUD_PROJECT:-}" ]]; then
     exit 1
 fi
 
-LOCATION="${GOOGLE_CLOUD_LOCATION:-europe-west1}"
+CLOUD_RUN_REGION="${CLOUD_RUN_REGION:-europe-west1}"
+VERTEX_LOCATION="${GOOGLE_CLOUD_LOCATION:-global}"
 SERVICE_NAME="paa-coach"
 APP_NAME="paa_coach"
 SA_EMAIL="paa-coach-run@${GOOGLE_CLOUD_PROJECT}.iam.gserviceaccount.com"
-MODEL_NAME="${PAA_MODEL:-gemini-2.5-flash}"
+MODEL_NAME="${PAA_MODEL:-gemini-3.5-flash}"
 
 echo "=== Déploiement de paa-coach sur Cloud Run ==="
-echo "Projet   : ${GOOGLE_CLOUD_PROJECT}"
-echo "Région   : ${LOCATION}"
-echo "Service  : ${SERVICE_NAME}"
-echo "Modèle   : ${MODEL_NAME}"
-echo "Compte SA: ${SA_EMAIL}"
+echo "Projet         : ${GOOGLE_CLOUD_PROJECT}"
+echo "Région Run     : ${CLOUD_RUN_REGION}"
+echo "Région Vertex  : ${VERTEX_LOCATION}"
+echo "Service        : ${SERVICE_NAME}"
+echo "Modèle         : ${MODEL_NAME}"
+echo "Compte SA      : ${SA_EMAIL}"
 echo "=============================================="
 
 # 2. Préparation des données d'index et de questions
@@ -42,22 +44,24 @@ echo ""
 echo "-> Étape 1 : Préparation des données (scripts/prepare_data.py)..."
 python scripts/prepare_data.py
 
-# 3. Assembler les variables d'environnement à transmettre au conteneur
-ENV_VARS="PAA_MODEL=${MODEL_NAME}"
-ENV_VARS="${ENV_VARS},GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}"
-ENV_VARS="${ENV_VARS},GOOGLE_CLOUD_LOCATION=${LOCATION}"
-ENV_VARS="${ENV_VARS},GOOGLE_GENAI_USE_VERTEXAI=TRUE"
+# 3. Assembler les options d'environnement ADK
+ADK_ENV_ARGS=(
+    "--env" "PAA_MODEL=${MODEL_NAME}"
+    "--env" "GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}"
+    "--env" "GOOGLE_CLOUD_LOCATION=${VERTEX_LOCATION}"
+    "--env" "GOOGLE_GENAI_USE_VERTEXAI=TRUE"
+)
 
 if [[ -n "${PAA_MODEL_ARMOR_PROMPT_TEMPLATE:-}" ]]; then
-    ENV_VARS="${ENV_VARS},PAA_MODEL_ARMOR_PROMPT_TEMPLATE=${PAA_MODEL_ARMOR_PROMPT_TEMPLATE}"
+    ADK_ENV_ARGS+=("--env" "PAA_MODEL_ARMOR_PROMPT_TEMPLATE=${PAA_MODEL_ARMOR_PROMPT_TEMPLATE}")
 fi
 
 if [[ -n "${PAA_MODEL_ARMOR_RESPONSE_TEMPLATE:-}" ]]; then
-    ENV_VARS="${ENV_VARS},PAA_MODEL_ARMOR_RESPONSE_TEMPLATE=${PAA_MODEL_ARMOR_RESPONSE_TEMPLATE}"
+    ADK_ENV_ARGS+=("--env" "PAA_MODEL_ARMOR_RESPONSE_TEMPLATE=${PAA_MODEL_ARMOR_RESPONSE_TEMPLATE}")
 fi
 
 if [[ -n "${DEVELOPER_KNOWLEDGE_API_KEY:-}" ]]; then
-    ENV_VARS="${ENV_VARS},DEVELOPER_KNOWLEDGE_API_KEY=${DEVELOPER_KNOWLEDGE_API_KEY}"
+    ADK_ENV_ARGS+=("--env" "DEVELOPER_KNOWLEDGE_API_KEY=${DEVELOPER_KNOWLEDGE_API_KEY}")
 fi
 
 # 4. Déploiement via ADK CLI
@@ -65,19 +69,19 @@ echo ""
 echo "-> Étape 2 : Déploiement Cloud Run via adk deploy cloud_run..."
 adk deploy cloud_run \
     --project="${GOOGLE_CLOUD_PROJECT}" \
-    --region="${LOCATION}" \
+    --region="${CLOUD_RUN_REGION}" \
     --service_name="${SERVICE_NAME}" \
     --app_name="${APP_NAME}" \
     --with_ui \
     --otel_to_cloud \
+    "${ADK_ENV_ARGS[@]}" \
     ./paa_coach \
     -- \
+    --quiet \
     --no-allow-unauthenticated \
-    --iap \
     --service-account="${SA_EMAIL}" \
     --max-instances=1 \
-    --timeout=300 \
-    --set-env-vars="${ENV_VARS}"
+    --timeout=300
 
 # 5. Consolidation et verrouillage de la sécurité IAP
 echo ""
@@ -89,7 +93,7 @@ IAP_SA="serviceAccount:service-${PROJECT_NUMBER}@gcp-sa-iap.iam.gserviceaccount.
 echo "  - Attribution du rôle roles/run.invoker à l'agent de service IAP..."
 gcloud run services add-iam-policy-binding "${SERVICE_NAME}" \
     --project="${GOOGLE_CLOUD_PROJECT}" \
-    --region="${LOCATION}" \
+    --region="${CLOUD_RUN_REGION}" \
     --member="${IAP_SA}" \
     --role="roles/run.invoker" \
     --quiet >/dev/null
@@ -99,7 +103,7 @@ if [[ -n "${PAA_ALLOWED_MEMBER:-}" ]]; then
     echo "  - Attribution de roles/iap.httpsResourceAccessor à ${PAA_ALLOWED_MEMBER}..."
     gcloud run services add-iam-policy-binding "${SERVICE_NAME}" \
         --project="${GOOGLE_CLOUD_PROJECT}" \
-        --region="${LOCATION}" \
+        --region="${CLOUD_RUN_REGION}" \
         --member="${PAA_ALLOWED_MEMBER}" \
         --role="roles/iap.httpsResourceAccessor" \
         --quiet >/dev/null
@@ -111,7 +115,7 @@ fi
 # 6. Affichage de l'URL finale et des consignes de vérification
 SERVICE_URL=$(gcloud run services describe "${SERVICE_NAME}" \
     --project="${GOOGLE_CLOUD_PROJECT}" \
-    --region="${LOCATION}" \
+    --region="${CLOUD_RUN_REGION}" \
     --format="value(status.url)")
 
 echo ""
