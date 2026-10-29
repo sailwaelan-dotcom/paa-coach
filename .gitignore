@@ -6,3 +6,6 @@ __pycache__/
 *.pyc
 .venv/
 .env
+
+# Config Claude Code locale (skills, réglages perso)
+.claude/
