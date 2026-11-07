@@ -140,7 +140,7 @@ sequenceDiagram
 | `derniere_question` | Session | `dict` | Question en cours (options mélangées, bonne réponse, explication, pièges). Remplacée à chaque nouvelle question. |
 | `temp:critique` | Invocation | `str` | Retour d'erreur de `question_checker` vers `question_writer` lors d'une itération de rejet. |
 | `user:historique` | Persistant (`user:`) | `list[dict]` | Historique chronologique des 200 dernières tentatives (`id`, section, motifs, résultat `juste`/`faux`). |
-| `user:weak_areas` | Persistant (`user:`) | `list[dict]` | Top 10 des sections et motifs les plus échoués, avec compteurs d'échecs. |
+| `user:weak_areas` | Persistant (`user:`) | `list[dict]` | Top 10 des sections et motifs avec des erreurs récentes (échecs sur les 5 derniers essais de chacun, échauffement exclu). |
 | `user:validated_modules` | Persistant (`user:`) | `list[str]` | Liste des sections validées (au moins 5 tentatives et >= 80% de réussite sur les 5 dernières). |
 
 ---

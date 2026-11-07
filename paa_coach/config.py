@@ -126,4 +126,21 @@ ANTI_COPIE_MAX_RATIO: Final[float] = 0.6
 SOURCE_OFFICIELLE: Final[str] = "google-officiel"
 
 # Longueur maximale de la bonne réponse, relativement au piège le plus long
-LONGUEUR_OPTION_MAX_RATIO: Final[float] = 1.4
+# (le maximum observé dans les questions officielles est 1.41)
+LONGUEUR_OPTION_MAX_RATIO: Final[float] = 1.5
+
+# Écart de longueur maximal (option la plus longue / la plus courte) pour que les 4 options
+# soient jugées équivalentes : la longueur ne trahit alors rien.
+OPTIONS_EQUILIBREES_MAX_RATIO: Final[float] = 1.15
+
+# Part maximale des questions publiées où la bonne réponse est la plus longue (options
+# inégales), sur les dernières publications. Questions officielles : 7/20 ; questions
+# générées avant ce contrôle : 75 à 85 %.
+BONNE_PLUS_LONGUE_FENETRE: Final[int] = 20
+BONNE_PLUS_LONGUE_MAX_PART: Final[float] = 0.45
+
+# Longueur maximale de l'énoncé (les 20 questions officielles font de 33 à 105 mots)
+ENONCE_MAX_MOTS: Final[int] = 110
+
+# Nombre maximal d'exigences numérotées dans l'énoncé (les officielles en ont 2 au plus)
+ENONCE_MAX_EXIGENCES_NUMEROTEES: Final[int] = 2

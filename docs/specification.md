@@ -173,6 +173,7 @@ Tous : annotations de type complètes, docstring (PEP 257) qui explique à quoi 
 Contrôles, tous déterministes :
 
 1. Champs présents et bien typés ; exactement 4 options A-D non vides et distinctes ; `reponse` parmi A-D ; un piège expliqué pour chaque mauvaise option ; `difficulte` dans 1-3 ; `motifs` pris dans [reference/motifs.md](../reference/motifs.md) (au moins un).
+1 bis. **Format et longueur, calibrés sur les 20 questions officielles** (qui passent toutes) : énoncé de 110 mots au plus, 2 exigences numérotées au plus ; bonne réponse jamais plus de 1,5 fois plus longue que le plus long piège ; et sur les 20 dernières questions publiées, la bonne réponse n'est la plus longue d'options inégales (écart de plus de 15 %) que dans 45 % des cas au plus (série persistante `user:bonne_plus_longue`). Avant ce contrôle, la bonne réponse était la plus longue dans 75 à 85 % des questions générées, contre 7 sur 20 dans les questions officielles.
 2. **Anti-copie** : refus si l'énoncé ressemble trop à un énoncé de la bibliothèque (`difflib.SequenceMatcher(...).ratio() > 0.6`, seuil en constante nommée).
 3. Si tout va bien : **mélange l'ordre des options** (et remappe `reponse` et `pieges`), attribue un `id` (`gen-<horodatage>`), écrit la question dans `tool_context.state["derniere_question"]`, met `tool_context.actions.escalate = True`, renvoie `{"status": "ok", "question": <sans la réponse ni les explications>}`.
 4. Sinon : renvoie `{"status": "rejected", "errors": [...]}` sans arrêter la boucle.
@@ -182,7 +183,7 @@ Contrôles, tous déterministes :
 - Compare la lettre (insensible à la casse, espaces retirés) à `state["derniere_question"]["reponse"]`.
 - Met à jour, avec le préfixe `user:` :
   - `user:historique` : liste des derniers résultats (`id`, section, motifs, juste/faux), bornée aux 200 derniers ;
-  - `user:weak_areas` : sections et motifs ratés, avec compteurs, triés du plus raté au moins raté ; **résumé court** (10 entrées au plus) pour ne pas saturer l'instruction de `triage_agent` ;
+  - `user:weak_areas` : sections et motifs ayant au moins une erreur sur leurs 5 derniers essais (`echecs` sur `essais`), triés du plus raté au moins raté ; une erreur ancienne suivie de 5 réponses justes en sort ; les questions d'échauffement (`inclus_calcul: false`) ne comptent ni ici ni pour la validation ; **résumé court** (10 entrées au plus) pour ne pas saturer l'instruction de `triage_agent` ;
   - `user:validated_modules` : une section est validée après au moins 5 réponses dont 80 % justes sur les 5 dernières ; elle perd ce statut si ce taux retombe sous 80 %.
 - Renvoie : juste/faux, bonne réponse, explication, pièges, sources, `a_verifier`.
 - Erreur propre si aucune question n'est en attente ou si la lettre n'est pas A-D.

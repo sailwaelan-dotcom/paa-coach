@@ -6,6 +6,7 @@ import difflib
 import json
 import logging
 import random
+import re
 import time
 from typing import Any
 from urllib.parse import urlparse
@@ -58,6 +59,42 @@ def _valider_domaines_sources(sources_doc: Any) -> bool:
         except Exception:
             return False
     return True
+
+
+_EXIGENCE_NUMEROTEE = re.compile(r"\((\d)\)|^\s*(\d)[.)]\s", re.MULTILINE)
+
+
+def _verifier_format_enonce(enonce: str) -> list[str]:
+    """Vérifie que l'énoncé garde le format des questions officielles Google.
+
+    Les questions officielles font de 33 à 105 mots et posent deux exigences numérotées
+    au plus. Une longue liste d'exigences permet d'éliminer les pièges en les comparant
+    point par point, sans connaître le sujet.
+    """
+    erreurs: list[str] = []
+    nb_mots = len(enonce.split())
+    if nb_mots > config.ENONCE_MAX_MOTS:
+        erreurs.append(
+            f"Énoncé trop long ({nb_mots} mots, {config.ENONCE_MAX_MOTS} au plus) : "
+            "garde une ou deux contraintes, comme les questions officielles."
+        )
+    numeros = {a or b for a, b in _EXIGENCE_NUMEROTEE.findall(enonce)}
+    if len(numeros) > config.ENONCE_MAX_EXIGENCES_NUMEROTEES:
+        erreurs.append(
+            f"L'énoncé liste {len(numeros)} exigences numérotées "
+            f"({config.ENONCE_MAX_EXIGENCES_NUMEROTEES} au plus) : garde une ou deux contraintes."
+        )
+    return erreurs
+
+
+def _bonne_reponse_se_repere(options: dict[str, Any], reponse: str) -> bool:
+    """Indique si la bonne réponse est la plus longue d'options de longueurs inégales."""
+    longueurs = {k: len(str(v).strip()) for k, v in options.items()}
+    longueur_max_pieges = max(n for k, n in longueurs.items() if k != reponse)
+    equilibrees = (
+        max(longueurs.values()) <= config.OPTIONS_EQUILIBREES_MAX_RATIO * min(longueurs.values())
+    )
+    return longueurs[reponse] > longueur_max_pieges and not equilibrees
 
 
 def valider_et_publier(question_json: str, tool_context: ToolContext) -> dict[str, Any]:
@@ -121,6 +158,7 @@ def valider_et_publier(question_json: str, tool_context: ToolContext) -> dict[st
         enonce = str(data["enonce"]).strip()
         if not enonce:
             errors.append("Le champ 'enonce' ne peut être vide.")
+        errors.extend(_verifier_format_enonce(enonce))
 
         options = data["options"]
         if not isinstance(options, dict) or set(options.keys()) != {"A", "B", "C", "D"}:
@@ -147,16 +185,29 @@ def valider_et_publier(question_json: str, tool_context: ToolContext) -> dict[st
                         errors.append(f"L'explication du piège pour l'option {k} ne peut être vide.")
 
         # La bonne réponse ne doit pas se repérer à sa longueur
+        serie: list[bool] = []
         if isinstance(options, dict) and reponse in options and not errors:
             longueur_bonne = len(str(options[reponse]).strip())
             longueur_max_pieges = max(
                 len(str(v).strip()) for k, v in options.items() if k != reponse
             )
+            se_repere = _bonne_reponse_se_repere(options, reponse)
+            # Sur les dernières publications, la plus longue ne doit pas être la bonne trop souvent
+            serie = list(tool_context.state.get("user:bonne_plus_longue", []))
+            serie = (serie + [se_repere])[-config.BONNE_PLUS_LONGUE_FENETRE:]
+            part = sum(serie) / len(serie)
             if longueur_bonne > config.LONGUEUR_OPTION_MAX_RATIO * longueur_max_pieges:
                 errors.append(
                     f"La bonne réponse est nettement plus longue que les pièges "
                     f"({longueur_bonne} contre {longueur_max_pieges} caractères au plus) : "
                     "équilibre la longueur et le niveau de détail des 4 options."
+                )
+            elif se_repere and part > config.BONNE_PLUS_LONGUE_MAX_PART:
+                errors.append(
+                    "La bonne réponse est la plus longue des 4 options : avec cette question, ce "
+                    f"serait le cas dans {sum(serie)} des {len(serie)} dernières questions publiées "
+                    f"({round(config.BONNE_PLUS_LONGUE_MAX_PART * 100)} % au plus). Raccourcis-la "
+                    "ou allonge un piège, pour que la longueur ne trahisse pas la réponse."
                 )
 
         explication = str(data["explication"]).strip()
@@ -212,6 +263,7 @@ def valider_et_publier(question_json: str, tool_context: ToolContext) -> dict[st
 
         # Publication dans le state de session
         tool_context.state["derniere_question"] = full_question
+        tool_context.state["user:bonne_plus_longue"] = serie
 
         # Interrompre la boucle LoopAgent
         tool_context.actions.escalate = True
@@ -237,12 +289,51 @@ def valider_et_publier(question_json: str, tool_context: ToolContext) -> dict[st
         return {"status": "rejected", "errors": [f"Erreur interne de validation: {exc}"]}
 
 
+FENETRE_LACUNES: int = 5
+"""Nombre de derniers essais par section ou motif pris en compte pour les lacunes."""
+
+
+def _calculer_lacunes(historique: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Calcule les lacunes récentes à partir de l'historique pris en compte.
+
+    Pour chaque section et chaque motif, seuls les `FENETRE_LACUNES` derniers essais
+    comptent : une erreur ancienne, suivie de réponses justes, sort de la liste.
+
+    Args:
+        historique: Réponses prises en compte, de la plus ancienne à la plus récente.
+
+    Returns:
+        Au plus 10 lacunes `{"type", "nom", "echecs", "essais"}`, triées par échecs
+        récents décroissants puis par erreur la plus récente.
+    """
+    essais: dict[tuple[str, str], list[tuple[int, bool]]] = {}
+    for i, h in enumerate(historique):
+        correct = bool(h.get("correct", False))
+        cles = [("motif", m) for m in h.get("motifs", [])]
+        if h.get("section"):
+            cles.insert(0, ("section", h["section"]))
+        for cle in cles:
+            essais.setdefault(cle, []).append((i, correct))
+
+    lacunes: list[tuple[int, int, dict[str, Any]]] = []
+    for (type_, nom), liste in essais.items():
+        recents = liste[-FENETRE_LACUNES:]
+        echecs = [i for i, correct in recents if not correct]
+        if echecs:
+            entree = {"type": type_, "nom": nom, "echecs": len(echecs), "essais": len(recents)}
+            lacunes.append((len(echecs), max(echecs), entree))
+
+    lacunes.sort(key=lambda x: (x[0], x[1]), reverse=True)
+    return [entree for _, _, entree in lacunes[:10]]
+
+
 def enregistrer_reponse(reponse: str, tool_context: ToolContext) -> dict[str, Any]:
     """Enregistre la réponse de l'utilisateur, compare avec la bonne réponse et met à jour l'historique.
 
     Met à jour dans l'état persistant utilisateur :
     - `user:historique` : 200 derniers résultats avec identifiant, section, motifs et succès.
-    - `user:weak_areas` : 10 sections et motifs les plus ratés, ordonnés par échecs décroissants.
+    - `user:weak_areas` : 10 sections et motifs avec au moins une erreur sur leurs 5 derniers essais,
+      ordonnés par échecs récents décroissants.
     - `user:validated_modules` : sections validées (au moins 5 tentatives et 80% de succès sur les 5 dernières).
 
     Args:
@@ -288,34 +379,17 @@ def enregistrer_reponse(reponse: str, tool_context: ToolContext) -> dict[str, An
             historique = historique[-200:]
         tool_context.state["user:historique"] = historique
 
-        # 2. Mise à jour de user:weak_areas (Top 10 des faiblesses)
-        echecs_par_section: dict[str, int] = {}
-        echecs_par_motif: dict[str, int] = {}
-
-        for h in historique:
-            if not h.get("correct", False):
-                sec = h.get("section")
-                if sec:
-                    echecs_par_section[sec] = echecs_par_section.get(sec, 0) + 1
-                for m in h.get("motifs", []):
-                    echecs_par_motif[m] = echecs_par_motif.get(m, 0) + 1
-
-        weak_areas: list[dict[str, Any]] = []
-        for sec, cnt in echecs_par_section.items():
-            weak_areas.append({"type": "section", "nom": sec, "echecs": cnt})
-        for m, cnt in echecs_par_motif.items():
-            weak_areas.append({"type": "motif", "nom": m, "echecs": cnt})
-
-        # Trier par nombre d'échecs décroissant et borner à 10
-        weak_areas.sort(key=lambda x: x["echecs"], reverse=True)
-        tool_context.state["user:weak_areas"] = weak_areas[:10]
+        # 2. Mise à jour de user:weak_areas (Top 10 des faiblesses récentes)
+        # Exclut les questions de la série d'échauffement ou marquées non incluses
+        historique_calcule = [h for h in historique if h.get("inclus_calcul", True) is not False]
+        tool_context.state["user:weak_areas"] = _calculer_lacunes(historique_calcule)
 
         # 3. Mise à jour de user:validated_modules (>= 5 réponses et >= 80% sur les 5 dernières)
-        sections_vues = {h["section"] for h in historique if "section" in h}
+        sections_vues = {h["section"] for h in historique_calcule if "section" in h}
         modules_valides: list[str] = []
 
         for sec in sorted(sections_vues):
-            rep_sec = [h for h in historique if h.get("section") == sec]
+            rep_sec = [h for h in historique_calcule if h.get("section") == sec]
             if len(rep_sec) >= 5:
                 dernieres_5 = rep_sec[-5:]
                 reussites = sum(1 for h in dernieres_5 if h.get("correct", False))

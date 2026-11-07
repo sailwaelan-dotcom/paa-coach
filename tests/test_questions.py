@@ -30,7 +30,7 @@ def _creer_question_valide(
         "options": {
             "A": "Option Alpha distinctive answer",
             "B": "Option Beta distinctive answer",
-            "C": "Option Gamma correct distinctive answer",
+            "C": "Option Gamma distinctive answer",
             "D": "Option Delta distinctive answer",
         },
         "reponse": "C",
@@ -230,6 +230,57 @@ def test_enregistrer_reponse_faux_et_maj_weak_areas(
     assert "service-detourne" in noms
 
 
+def test_weak_areas_oublie_les_erreurs_anciennes(
+    mock_tool_context: MockToolContext
+) -> None:
+    # Une erreur ancienne sur 3.1 / concept-voisin, puis 4 réponses justes
+    mock_tool_context.state["user:historique"] = [
+        {"id": "q0", "section": "3.1", "motifs": ["concept-voisin"], "correct": False}
+    ] + [
+        {"id": f"q{i}", "section": "3.1", "motifs": ["concept-voisin"], "correct": True}
+        for i in range(1, 5)
+    ]
+    mock_tool_context.state["derniere_question"] = {
+        "id": "q5", "reponse": "A", "section": "3.1", "motifs": ["concept-voisin"],
+    }
+    # 5e réponse juste : l'erreur sort de la fenêtre des 5 derniers essais
+    enregistrer_reponse("A", mock_tool_context)
+    assert mock_tool_context.state["user:weak_areas"] == []
+
+
+def test_weak_areas_compte_les_echecs_recents_et_trie(
+    mock_tool_context: MockToolContext
+) -> None:
+    mock_tool_context.state["user:historique"] = [
+        {"id": "a", "section": "2.1", "motifs": ["determinisme"], "correct": False},
+        {"id": "b", "section": "2.1", "motifs": ["determinisme"], "correct": False},
+        {"id": "c", "section": "4.1", "motifs": [], "correct": True},
+    ]
+    mock_tool_context.state["derniere_question"] = {
+        "id": "d", "reponse": "A", "section": "5.1", "motifs": [],
+    }
+    enregistrer_reponse("B", mock_tool_context)
+    weak_areas = mock_tool_context.state["user:weak_areas"]
+    # 2.1 et determinisme : 2 échecs ; 5.1 : 1 échec ; 4.1 absente (aucun échec)
+    assert [w["echecs"] for w in weak_areas] == [2, 2, 1]
+    assert weak_areas[-1] == {"type": "section", "nom": "5.1", "echecs": 1, "essais": 1}
+    assert "4.1" not in {w["nom"] for w in weak_areas}
+
+
+def test_weak_areas_ignore_l_echauffement(
+    mock_tool_context: MockToolContext
+) -> None:
+    mock_tool_context.state["user:historique"] = [
+        {"id": "w", "section": "3.3", "motifs": ["inversion"], "correct": False,
+         "inclus_calcul": False},
+    ]
+    mock_tool_context.state["derniere_question"] = {
+        "id": "x", "reponse": "A", "section": "1.1", "motifs": [],
+    }
+    enregistrer_reponse("A", mock_tool_context)
+    assert mock_tool_context.state["user:weak_areas"] == []
+
+
 def test_enregistrer_reponse_regle_80_pourcent_validation(
     mock_tool_context: MockToolContext
 ) -> None:
@@ -295,9 +346,76 @@ def test_valider_et_publier_rejette_bonne_reponse_nettement_plus_longue(
     assert "derniere_question" not in mock_tool_context.state
 
 
+def _question_bonne_plus_longue() -> dict:
+    # Options inégales (un piège court) et bonne réponse la plus longue, de peu
+    q = _creer_question_valide()
+    q["options"]["A"] = "Short trap"
+    q["options"]["C"] = "Option Gamma distinctive answer!!"
+    return q
+
+
+def test_valider_et_publier_rejette_bonne_plus_longue_trop_souvent(
+    mock_tool_context: MockToolContext
+) -> None:
+    # Déjà 9 fois sur les 20 dernières : une 10e (la plus ancienne sort) dépasserait 45 %
+    mock_tool_context.state["user:bonne_plus_longue"] = [False] * 11 + [True] * 9
+    res = valider_et_publier(json.dumps(_question_bonne_plus_longue()), mock_tool_context)
+    assert res["status"] == "rejected"
+    assert any("plus longue" in err for err in res["errors"])
+
+
+def test_valider_et_publier_accepte_bonne_plus_longue_occasionnelle(
+    mock_tool_context: MockToolContext
+) -> None:
+    mock_tool_context.state["user:bonne_plus_longue"] = [False] * 17 + [True] * 3
+    res = valider_et_publier(json.dumps(_question_bonne_plus_longue()), mock_tool_context)
+    assert res["status"] == "ok"
+    serie = mock_tool_context.state["user:bonne_plus_longue"]
+    assert len(serie) == 20 and serie[-1] is True and sum(serie) == 4
+
+
 def test_valider_et_publier_accepte_longueurs_comparables(
     mock_tool_context: MockToolContext
 ) -> None:
-    # La bonne réponse est la plus longue, mais dans la marge tolérée
+    # La bonne réponse est la plus longue, mais les 4 options sont équivalentes (écart <= 15 %)
     res = valider_et_publier(json.dumps(_creer_question_valide()), mock_tool_context)
+    assert res["status"] == "ok"
+
+
+def test_valider_et_publier_accepte_options_inegales_si_bonne_reponse_pas_la_plus_longue(
+    mock_tool_context: MockToolContext
+) -> None:
+    q = _creer_question_valide()
+    q["options"]["A"] = "A much longer trap option that describes a plausible but wrong design"
+    res = valider_et_publier(json.dumps(q), mock_tool_context)
+    assert res["status"] == "ok"
+
+
+def test_valider_et_publier_rejette_enonce_trop_long(
+    mock_tool_context: MockToolContext
+) -> None:
+    q = _creer_question_valide(enonce=" ".join(f"word{i}" for i in range(config.ENONCE_MAX_MOTS + 1)))
+    res = valider_et_publier(json.dumps(q), mock_tool_context)
+    assert res["status"] == "rejected"
+    assert any("trop long" in err for err in res["errors"])
+
+
+@pytest.mark.parametrize("enonce", [
+    "Design an agent that must (1) discover peers, (2) avoid static keys and (3) wait 20 minutes.",
+    "Design an agent with these needs:\n1. Discover peers.\n2. Avoid static keys.\n3. Wait.\nWhat should you do?",
+])
+def test_valider_et_publier_rejette_trois_exigences_numerotees(
+    mock_tool_context: MockToolContext, enonce: str
+) -> None:
+    res = valider_et_publier(json.dumps(_creer_question_valide(enonce=enonce)), mock_tool_context)
+    assert res["status"] == "rejected"
+    assert any("numérotées" in err for err in res["errors"])
+
+
+def test_valider_et_publier_accepte_deux_exigences_numerotees(
+    mock_tool_context: MockToolContext
+) -> None:
+    # Format des questions officielles google-q11 et google-q17
+    enonce = "You found two vulnerabilities:\n\n1. Indirect prompt injection.\n\n2. Unverified destructive tools.\n\nWhat should you do?"
+    res = valider_et_publier(json.dumps(_creer_question_valide(enonce=enonce)), mock_tool_context)
     assert res["status"] == "ok"
