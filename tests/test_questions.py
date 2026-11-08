@@ -346,6 +346,95 @@ def test_valider_et_publier_rejette_bonne_reponse_nettement_plus_longue(
     assert "derniere_question" not in mock_tool_context.state
 
 
+def _creer_question_choose_two() -> dict:
+    q = _creer_question_valide()
+    q["options"]["E"] = "Option Epsilon distinctive answer"
+    q["reponse"] = ["B", "E"]
+    q["pieges"] = {"A": "Trap Alpha details", "C": "Trap Gamma details", "D": "Trap Delta details"}
+    return q
+
+
+def test_choose_two_publie_et_remappe(mock_tool_context: MockToolContext) -> None:
+    q = _creer_question_choose_two()
+    res = valider_et_publier(json.dumps(q), mock_tool_context)
+    assert res["status"] == "ok"
+    assert res["question"]["nb_reponses"] == 2
+    assert set(res["question"]["options"]) == {"A", "B", "C", "D", "E"}
+    saved = mock_tool_context.state["derniere_question"]
+    assert len(saved["reponse"]) == 2 and saved["reponse"] == "".join(sorted(saved["reponse"]))
+    # Les bonnes lettres pointent toujours vers les textes des bonnes réponses
+    assert {saved["options"][c] for c in saved["reponse"]} == {q["options"]["B"], q["options"]["E"]}
+    assert set(saved["pieges"]) == set("ABCDE") - set(saved["reponse"])
+    assert {saved["pieges"][k] for k in saved["pieges"]} == set(q["pieges"].values())
+
+
+@pytest.mark.parametrize("modif, message", [
+    ({"reponse": ["B"]}, "exactement 2 lettres"),
+    ({"reponse": ["B", "B"]}, "exactement 2 lettres"),
+    ({"reponse": ["B", "E", "A"]}, "exactement 2 lettres"),
+])
+def test_choose_two_rejette_nombre_de_reponses_invalide(
+    mock_tool_context: MockToolContext, modif: dict, message: str
+) -> None:
+    q = _creer_question_choose_two() | modif
+    res = valider_et_publier(json.dumps(q), mock_tool_context)
+    assert res["status"] == "rejected"
+    assert any(message in err for err in res["errors"])
+
+
+def test_choose_two_exige_cinq_options(mock_tool_context: MockToolContext) -> None:
+    q = _creer_question_choose_two()
+    del q["options"]["E"]
+    res = valider_et_publier(json.dumps(q), mock_tool_context)
+    assert res["status"] == "rejected"
+    assert any("A, B, C, D, E" in err for err in res["errors"])
+
+
+def test_une_reponse_refuse_option_e(mock_tool_context: MockToolContext) -> None:
+    q = _creer_question_valide()
+    q["options"]["E"] = "Option Epsilon distinctive answer"
+    res = valider_et_publier(json.dumps(q), mock_tool_context)
+    assert res["status"] == "rejected"
+
+
+def _publier_choose_two(ctx: MockToolContext) -> str:
+    valider_et_publier(json.dumps(_creer_question_choose_two()), ctx)
+    return ctx.state["derniere_question"]["reponse"]
+
+
+@pytest.mark.parametrize("format_reponse", ["{}", "{0}, {1}", "{0} {1}", "{1}{0}"])
+def test_choose_two_reponse_juste_quel_que_soit_le_format(
+    mock_tool_context: MockToolContext, format_reponse: str
+) -> None:
+    bonne = _publier_choose_two(mock_tool_context)
+    saisie = format_reponse.format(*bonne.lower()) if "{0}" in format_reponse else bonne
+    res = enregistrer_reponse(saisie, mock_tool_context)
+    assert res["status"] == "ok" and res["correct"] is True
+    assert res["reponse_donnee"] == bonne
+
+
+def test_choose_two_une_seule_bonne_lettre_est_fausse(mock_tool_context: MockToolContext) -> None:
+    bonne = _publier_choose_two(mock_tool_context)
+    fausse = next(c for c in "ABCDE" if c not in bonne)
+    res = enregistrer_reponse(bonne[0] + fausse, mock_tool_context)
+    assert res["status"] == "ok" and res["correct"] is False
+
+
+def test_choose_two_refuse_une_seule_lettre(mock_tool_context: MockToolContext) -> None:
+    bonne = _publier_choose_two(mock_tool_context)
+    res = enregistrer_reponse(bonne[0], mock_tool_context)
+    assert res["status"] == "error"
+    assert "2 lettres" in res["message"]
+    # La question reste en attente : Souhail peut répondre à nouveau
+    assert mock_tool_context.state["derniere_question"] is not None
+
+
+def test_une_reponse_refuse_deux_lettres(mock_tool_context: MockToolContext) -> None:
+    valider_et_publier(json.dumps(_creer_question_valide()), mock_tool_context)
+    res = enregistrer_reponse("AB", mock_tool_context)
+    assert res["status"] == "error"
+
+
 def _question_bonne_plus_longue() -> dict:
     # Options inégales (un piège court) et bonne réponse la plus longue, de peu
     q = _creer_question_valide()

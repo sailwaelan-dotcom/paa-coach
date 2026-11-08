@@ -87,21 +87,28 @@ def _verifier_format_enonce(enonce: str) -> list[str]:
     return erreurs
 
 
-def _bonne_reponse_se_repere(options: dict[str, Any], reponse: str) -> bool:
-    """Indique si la bonne réponse est la plus longue d'options de longueurs inégales."""
+_LETTRES_PAR_FORMAT: dict[int, list[str]] = {
+    1: ["A", "B", "C", "D"],  # 1 bonne réponse parmi 4
+    2: ["A", "B", "C", "D", "E"],  # 2 bonnes réponses parmi 5 ('Choose two')
+}
+
+
+def _bonne_reponse_se_repere(options: dict[str, Any], bonnes: list[str]) -> bool:
+    """Indique si les bonnes réponses sont plus longues que tous les pièges, options inégales."""
     longueurs = {k: len(str(v).strip()) for k, v in options.items()}
-    longueur_max_pieges = max(n for k, n in longueurs.items() if k != reponse)
+    longueur_max_pieges = max(n for k, n in longueurs.items() if k not in bonnes)
     equilibrees = (
         max(longueurs.values()) <= config.OPTIONS_EQUILIBREES_MAX_RATIO * min(longueurs.values())
     )
-    return longueurs[reponse] > longueur_max_pieges and not equilibrees
+    return min(longueurs[b] for b in bonnes) > longueur_max_pieges and not equilibrees
 
 
 def valider_et_publier(question_json: str, tool_context: ToolContext) -> dict[str, Any]:
     """Valide une question d'examen générée et la publie dans l'état de session si elle est conforme.
 
     Effectue des contrôles déterministes stricts :
-    1. Structure JSON, présence des 4 options (A-D distinctes), pièges pour chaque mauvaise option.
+    1. Structure JSON : 1 bonne réponse parmi 4 options A-D, ou 2 bonnes réponses parmi 5 options
+       A-E (format 'Choose two') ; pièges pour chacune des 3 mauvaises options.
     2. Motifs conformes au vocabulaire officiel de motifs.md.
     3. Contrôle anti-copie contre les énoncés de la bibliothèque (seuil SequenceMatcher <= 0.6).
     4. Validation des sources Google Docs officielles (force a_verifier à True si non conforme).
@@ -160,23 +167,38 @@ def valider_et_publier(question_json: str, tool_context: ToolContext) -> dict[st
             errors.append("Le champ 'enonce' ne peut être vide.")
         errors.extend(_verifier_format_enonce(enonce))
 
+        # Format : 1 bonne réponse parmi 4 (A-D) ou 2 bonnes réponses parmi 5 (A-E)
+        reponse_brute = data["reponse"]
+        if isinstance(reponse_brute, list):
+            bonnes = sorted({str(r).strip().upper() for r in reponse_brute})
+            if len(bonnes) != 2 or len(reponse_brute) != 2:
+                errors.append(
+                    "Une question à réponses multiples attend exactement 2 lettres distinctes "
+                    "dans 'reponse' (format 'Choose two', 5 options A-E)."
+                )
+        else:
+            bonnes = [str(reponse_brute).strip().upper()]
+        lettres = _LETTRES_PAR_FORMAT.get(len(bonnes), _LETTRES_PAR_FORMAT[1])
+
         options = data["options"]
-        if not isinstance(options, dict) or set(options.keys()) != {"A", "B", "C", "D"}:
-            errors.append("Le champ 'options' doit être un dictionnaire avec exactement les clés A, B, C et D.")
+        if not isinstance(options, dict) or set(options.keys()) != set(lettres):
+            errors.append(
+                f"Le champ 'options' doit être un dictionnaire avec exactement les clés "
+                f"{', '.join(lettres)} ({len(lettres)} options pour {len(bonnes)} bonne(s) réponse(s))."
+            )
         else:
             opt_values = [str(v).strip() for v in options.values()]
             if any(not v for v in opt_values):
                 errors.append("Aucune option ne peut être vide.")
-            if len(set(opt_values)) != 4:
-                errors.append("Les 4 options doivent être distinctes les unes des autres.")
+            if len(set(opt_values)) != len(lettres):
+                errors.append(f"Les {len(lettres)} options doivent être distinctes les unes des autres.")
 
-        reponse = str(data["reponse"]).strip().upper()
-        if reponse not in {"A", "B", "C", "D"}:
-            errors.append("Le champ 'reponse' doit être une lettre parmi A, B, C ou D.")
+        if not set(bonnes) <= set(lettres):
+            errors.append(f"Le champ 'reponse' doit désigner des lettres parmi {', '.join(lettres)}.")
 
         pieges = data["pieges"]
-        if isinstance(options, dict) and reponse in {"A", "B", "C", "D"}:
-            mauvaises_options = {"A", "B", "C", "D"} - {reponse}
+        mauvaises_options = set(lettres) - set(bonnes)
+        if isinstance(options, dict) and set(bonnes) <= set(lettres):
             if not isinstance(pieges, dict) or set(pieges.keys()) != mauvaises_options:
                 errors.append(f"Le dictionnaire 'pieges' doit expliquer exactement les 3 mauvaises options: {sorted(mauvaises_options)}.")
             else:
@@ -184,30 +206,28 @@ def valider_et_publier(question_json: str, tool_context: ToolContext) -> dict[st
                     if not str(v).strip():
                         errors.append(f"L'explication du piège pour l'option {k} ne peut être vide.")
 
-        # La bonne réponse ne doit pas se repérer à sa longueur
+        # Les bonnes réponses ne doivent pas se repérer à leur longueur
         serie: list[bool] = []
-        if isinstance(options, dict) and reponse in options and not errors:
-            longueur_bonne = len(str(options[reponse]).strip())
-            longueur_max_pieges = max(
-                len(str(v).strip()) for k, v in options.items() if k != reponse
-            )
-            se_repere = _bonne_reponse_se_repere(options, reponse)
+        if not errors:
+            longueur_bonne = max(len(str(options[b]).strip()) for b in bonnes)
+            longueur_max_pieges = max(len(str(options[k]).strip()) for k in mauvaises_options)
+            se_repere = _bonne_reponse_se_repere(options, bonnes)
             # Sur les dernières publications, la plus longue ne doit pas être la bonne trop souvent
             serie = list(tool_context.state.get("user:bonne_plus_longue", []))
             serie = (serie + [se_repere])[-config.BONNE_PLUS_LONGUE_FENETRE:]
             part = sum(serie) / len(serie)
             if longueur_bonne > config.LONGUEUR_OPTION_MAX_RATIO * longueur_max_pieges:
                 errors.append(
-                    f"La bonne réponse est nettement plus longue que les pièges "
+                    f"Une bonne réponse est nettement plus longue que les pièges "
                     f"({longueur_bonne} contre {longueur_max_pieges} caractères au plus) : "
-                    "équilibre la longueur et le niveau de détail des 4 options."
+                    "équilibre la longueur et le niveau de détail des options."
                 )
             elif se_repere and part > config.BONNE_PLUS_LONGUE_MAX_PART:
                 errors.append(
-                    "La bonne réponse est la plus longue des 4 options : avec cette question, ce "
+                    "Les bonnes réponses sont plus longues que tous les pièges : avec cette question, ce "
                     f"serait le cas dans {sum(serie)} des {len(serie)} dernières questions publiées "
-                    f"({round(config.BONNE_PLUS_LONGUE_MAX_PART * 100)} % au plus). Raccourcis-la "
-                    "ou allonge un piège, pour que la longueur ne trahisse pas la réponse."
+                    f"({round(config.BONNE_PLUS_LONGUE_MAX_PART * 100)} % au plus). Raccourcis une bonne "
+                    "réponse ou allonge un piège, pour que la longueur ne trahisse pas la réponse."
                 )
 
         explication = str(data["explication"]).strip()
@@ -230,19 +250,17 @@ def valider_et_publier(question_json: str, tool_context: ToolContext) -> dict[st
             a_verifier = True
 
         # 5. Mélange de l'ordre des options et remappage
-        option_letters = ["A", "B", "C", "D"]
-        correct_text = options[reponse]
-        trap_by_text = {options[letter]: pieges[letter] for letter in options if letter != reponse}
+        correct_texts = {options[b] for b in bonnes}
+        trap_by_text = {options[letter]: pieges[letter] for letter in mauvaises_options}
 
-        shuffled_texts = list(options.values())
+        shuffled_texts = [options[letter] for letter in lettres]
         random.shuffle(shuffled_texts)
 
-        new_options: dict[str, str] = {
-            letter: text for letter, text in zip(option_letters, shuffled_texts)
-        }
-        new_reponse = next(k for k, v in new_options.items() if v == correct_text)
+        new_options: dict[str, str] = dict(zip(lettres, shuffled_texts))
+        # Réponse stockée comme chaîne : "C", ou "AC" pour 2 bonnes réponses (lettres triées)
+        new_reponse = "".join(k for k, v in new_options.items() if v in correct_texts)
         new_pieges: dict[str, str] = {
-            k: trap_by_text[v] for k, v in new_options.items() if k != new_reponse
+            k: trap_by_text[v] for k, v in new_options.items() if v not in correct_texts
         }
 
         # 6. Attribuer un ID unique et enregistrer dans l'état
@@ -255,6 +273,7 @@ def valider_et_publier(question_json: str, tool_context: ToolContext) -> dict[st
             "enonce": enonce,
             "options": new_options,
             "reponse": new_reponse,
+            "nb_reponses": len(bonnes),
             "explication": explication,
             "pieges": new_pieges,
             "sources_doc": data["sources_doc"],
@@ -276,6 +295,7 @@ def valider_et_publier(question_json: str, tool_context: ToolContext) -> dict[st
             "difficulte": difficulte,
             "enonce": enonce,
             "options": new_options,
+            "nb_reponses": len(bonnes),
             "sources_doc": data["sources_doc"],
             "a_verifier": a_verifier,
         }
@@ -337,7 +357,8 @@ def enregistrer_reponse(reponse: str, tool_context: ToolContext) -> dict[str, An
     - `user:validated_modules` : sections validées (au moins 5 tentatives et 80% de succès sur les 5 dernières).
 
     Args:
-        reponse: Lettre choisie par l'utilisateur (A, B, C ou D).
+        reponse: Lettre choisie (A à D), ou les 2 lettres choisies pour une question 'Choose two'
+            (A à E, par exemple "AC" ou "A, C"). Toutes les bonnes lettres sont exigées.
         tool_context: Contexte d'outils ADK.
 
     Returns:
@@ -351,12 +372,20 @@ def enregistrer_reponse(reponse: str, tool_context: ToolContext) -> dict[str, An
                 "message": "Aucune question n'est en attente de réponse.",
             }
 
-        lettre = reponse.strip().upper()
-        if lettre not in {"A", "B", "C", "D"}:
+        nb_reponses = int(derniere_question.get("nb_reponses", 1))
+        lettres_valides = _LETTRES_PAR_FORMAT.get(nb_reponses, _LETTRES_PAR_FORMAT[1])
+        # Accepte "b", "A,C", "a c", "AC" : seules les lettres comptent
+        choisies = sorted({c for c in reponse.upper() if c.isalpha()})
+        if len(choisies) != nb_reponses or not set(choisies) <= set(lettres_valides):
+            attendu = (
+                "une lettre parmi A, B, C ou D" if nb_reponses == 1
+                else f"{nb_reponses} lettres distinctes parmi {', '.join(lettres_valides)} (Choose two)"
+            )
             return {
                 "status": "error",
-                "message": f"Réponse invalide '{reponse}'. La réponse doit être A, B, C ou D.",
+                "message": f"Réponse invalide '{reponse}'. Cette question attend {attendu}.",
             }
+        lettre = "".join(choisies)
 
         bonne_reponse = derniere_question["reponse"]
         est_juste = (lettre == bonne_reponse)
