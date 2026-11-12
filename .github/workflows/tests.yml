@@ -1,0 +1,26 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: paa_coach/requirements.txt
+      - name: Installer les dépendances
+        run: pip install -r paa_coach/requirements.txt
+      # Tests unitaires seulement : aucun appel réseau, aucun identifiant Google Cloud.
+      # Les évaluations `adk eval` (appels Vertex AI) se lancent à la main : scripts/run_evals.sh
+      - name: Tests unitaires
+        run: pytest -q

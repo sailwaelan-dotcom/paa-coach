@@ -1,22 +1,27 @@
-# paa-coach — Coach multi-agents ADK pour la certification PAA
+# paa-coach — Système multi-agents ADK sur Google Cloud
 
-**as_of** : 2026-10-29 · **Statut** : déployé sur Cloud Run (critères 0 à 6 de la spécification). Les outils sont couverts par 46 tests unitaires, le comportement des agents par 8 cas d'évaluation `adk eval` (section 5.2).
+[![tests](https://github.com/sailwaelan-dotcom/paa-coach/actions/workflows/tests.yml/badge.svg)](https://github.com/sailwaelan-dotcom/paa-coach/actions/workflows/tests.yml)
 
-Projet personnel construit avec **Google Agent Development Kit (ADK 2.13.0)** en Python pour préparer la certification Google Cloud **« Professional Agentic Architect » (PAA)**. Il sert aussi d'exemple concret des motifs d'architecture abordés à l'examen.
+**as_of** : 2026-11-12 · **Statut** : projet de démonstration, figé. Déployé et vérifié sur Cloud Run le 29/10/2026 (critères 0 à 6 de la [spécification](docs/specification.md)). Les outils sont couverts par 69 tests unitaires, le comportement des agents par 8 cas d'évaluation `adk eval` (section 5.2).
 
-**Méthode** : spécification et architecture rédigées par Souhail, code écrit par l'agent Antigravity, puis relu, corrigé et évalué avec Claude Code (tests unitaires, `adk eval`, vérifications en production).
+Un système multi-agents construit avec **Google Agent Development Kit (ADK 2.13.0)** en Python : un agent de triage, un coach qui fait rédiger puis contrôler des questions d'architecture par une boucle de deux agents, et un relecteur de code. Il tourne sur Cloud Run derrière Identity-Aware Proxy, avec filtrage Model Armor, traces OpenTelemetry et évaluation automatisée.
+
+**Origine** : je l'ai conçu pour préparer l'examen Google Cloud **« Professional Agentic Architect » (PAA)**, sorti à l'automne 2026, pour lequel il n'existait pas d'annales. Examen écrit réussi le 12/11/2026, en centre d'examen (résultat à confirmer par Google ; les labs pratiques restent à passer). Le dépôt ne contient aucune question de l'examen.
+
+**Méthode** : spécification et architecture rédigées par Souhail Chafai, code écrit par l'agent Antigravity, puis relu, corrigé et évalué avec Claude Code (tests unitaires, `adk eval`, vérifications en production).
 
 ---
 
-## 1. Intention & Deux Publics
+## 1. Ce que le projet démontre
 
-1. **Entraînement de Souhail (Candidat PAA)** :
-   - Génération de questions d'architecture inédites et réalistes en anglais (format officiel de l'examen).
+1. **Un usage réel, mené jusqu'au bout** :
+   - Génération de questions d'architecture inédites en anglais, à une bonne réponse parmi quatre ou à deux parmi cinq (« Choose two »).
    - Débriefing immédiat en français : analyse de la contrainte décisive, justification de la bonne pratique Google Cloud, décryptage de chaque option piège et liens vers la documentation officielle.
    - Suivi dynamique des lacunes (`user:weak_areas`) et validation de compétences (`user:validated_modules` au seuil de 80 % de succès sur 5 essais).
-   - Relecture et audit statique de code Python ADK pour les travaux pratiques.
+   - Relecture et audit statique de code Python ADK.
+   - Un outil en ligne de commande (`scripts/coach_cli.py`) qui applique les mêmes contrôles déterministes en local, sur la base SQLite.
 
-2. **Exemple d'architecture pour un public technique** :
+2. **Une architecture lisible pour un public technique** :
    - Motifs d'architecture multi-agents ADK (`LlmAgent`, `LoopAgent`, `AgentTool`, partitionnement du `State`).
    - Outils sur mesure avec typage statique complet, docstrings conformes (PEP 257) et contrôle anti-copie déterministe.
    - Sécurité proportionnée à un usage individuel : Identity-Aware Proxy (IAP) sans Load Balancer, compte de service à moindre privilège, filtrage Model Armor des entrées/sorties, analyse statique (AST) du code soumis sans l'exécuter.
@@ -51,7 +56,7 @@ flowchart TD
 
         subgraph CustomTools ["Outils Données & Contrôles Déterministes"]
             SearchTool["Tool: chercher_exemples<br/>• Lit index.jsonl et questions.jsonl<br/>• Relâchement progressif des filtres"]
-            ValidateTool["Tool: valider_et_publier<br/>• Validation schéma 4 options A-D<br/>• Anti-copie (SequenceMatcher <= 0.6)<br/>• Mélange A-D + remappage pièges<br/>• Interrompt la boucle via actions.escalate"]
+            ValidateTool["Tool: valider_et_publier<br/>• Validation schéma (4 options A-D, ou 5 options A-E en Choose two)<br/>• Anti-copie (SequenceMatcher <= 0.6)<br/>• Mélange des options + remappage pièges<br/>• Interrompt la boucle via actions.escalate"]
         end
 
         subgraph McpServer ["Serveur MCP Google Developer Knowledge"]
@@ -106,7 +111,7 @@ flowchart TD
 ### 4.2 Installation
 ```bash
 # Cloner le dépôt et entrer dans le dossier
-git clone <url-du-depot>
+git clone https://github.com/sailwaelan-dotcom/paa-coach.git
 cd paa-coach
 
 # Créer un environnement virtuel
@@ -157,10 +162,11 @@ La suite de tests unitaires valide déterministement l'ensemble des règles mét
 pytest -v
 ```
 
-Couverture validée (32 tests) :
-- `tests/test_references.py` : Filtrage par section, préfixes, motifs, relâchement progressif des contraintes, respect de la limite, copie conforme de `reponse_verifiee`.
-- `tests/test_questions.py` : Validation structurelle JSON, 4 options A-D distinctes, mélange aléatoire des options et remappage exact des pièges et de la bonne réponse, contrôle anti-copie (rejet si similarité > 0.6), validation des domaines documentaires Google, enregistrement de la réponse, mise à jour de `user:historique` (borné à 200), `user:weak_areas` (top 10), règle des 80 % de validation de module.
-- `tests/test_code_audit.py` : Analyse AST sans exécution, détection d'erreurs de syntaxe, typage manquant, docstrings publiques, nommage obligatoire de `tool_context`, conformité des identifiants d'agents, `max_iterations` sur `LoopAgent`, détection de `root_agent`, vérification que le code reçu n'est jamais exécuté.
+Couverture validée (69 tests, relancés à chaque push par [GitHub Actions](.github/workflows/tests.yml)) :
+- `tests/test_references.py` (11) : Filtrage par section, préfixes, motifs, relâchement progressif des contraintes, respect de la limite, copie conforme de `reponse_verifiee`.
+- `tests/test_questions.py` (40) : Validation structurelle JSON, formats à 4 options A-D et « Choose two » à 5 options A-E, mélange aléatoire des options et remappage exact des pièges et des bonnes réponses, équilibre de longueur des options, contrôle anti-copie (rejet si similarité > 0.6), validation des domaines documentaires Google, enregistrement de la réponse, mise à jour de `user:historique` (borné à 200), `user:weak_areas` (top 10), règle des 80 % de validation de module.
+- `tests/test_code_audit.py` (10) : Analyse AST sans exécution, détection d'erreurs de syntaxe, typage manquant, docstrings publiques, nommage obligatoire de `tool_context`, conformité des identifiants d'agents, `max_iterations` sur `LoopAgent`, détection de `root_agent`, vérification que le code reçu n'est jamais exécuté.
+- `tests/test_callbacks.py` (5) et `tests/test_mcp_headers.py` (3) : callbacks des agents et en-têtes envoyés au serveur MCP.
 
 ---
 

@@ -73,7 +73,7 @@ Ton rôle :
    - LA DIFFICULTÉ VIENT DES PIÈGES, pas de la longueur : chaque piège est une solution Google Cloud crédible qui respecte TOUTES les contraintes écrites de l'énoncé et n'échoue que sur la contrainte décisive (souvent subtile : coût, latence, géré vs maison, périmètre de la menace). Un piège ne contient jamais d'anti-motif évident (clé de compte de service statique, attente synchrone de plusieurs minutes, polling, droits trop larges) sauf si c'est précisément la confusion testée.
    - LONGUEUR DES OPTIONS : la bonne réponse n'est PAS la plus longue, sauf si les 4 options ont la même longueur à 15 % près (sinon l'outil rejette la question). Varie : la bonne réponse est parfois la plus courte.
    - Pas de chiffre, quota ou règle de dimensionnement précis dans la bonne réponse sans source officielle qui l'établit ; à défaut, mets "a_verifier": true.
-   - FORMAT 'CHOOSE TWO' (si demandé) : 5 options A-E, "reponse" est une liste de 2 lettres (ex. ["B", "E"]), "pieges" explique les 3 autres. Les 2 bonnes réponses sont deux mesures complémentaires et indépendantes (chacune nécessaire, aucune ne suffit seule), ou deux solutions valides chacune ; jamais deux reformulations de la même idée. Un piège peut être à moitié juste : bon objectif, mauvais mécanisme.
+   - FORMAT 'CHOOSE TWO' (si demandé) : 5 options A-E, "reponse" est une liste de 2 lettres (ex. ["B", "E"]), "pieges" explique les 3 autres. Alterne deux types, à peu près à parts égales : (a) deux mesures complémentaires et indépendantes (chacune nécessaire, aucune ne suffit seule) ; (b) deux solutions de rechange, dont chacune satisfait SEULE toutes les exigences de l'énoncé (l'énoncé demande alors deux approches qui conviennent, pas une combinaison). Jamais deux reformulations de la même idée. Indique le type retenu dans "explication". Un piège peut être à moitié juste : bon objectif, mauvais mécanisme.
    - Énoncé et options A, B, C, D rédigés en ANGLAIS.
    - Explications de la contrainte décisive et des pièges rédigées pour la révision.
 5. Si une critique précédente est présente dans le state ({temp:critique?}), prends-la impérativement en compte pour corriger la question.
@@ -107,7 +107,7 @@ Ton rôle :
    - L'énoncé est-il en prose, sans liste d'exigences numérotées, avec une ou deux contraintes au plus ?
    - La bonne réponse n'est-elle pas la plus longue ni la plus détaillée des 4 options ?
    - Un chiffre, quota ou règle de dimensionnement précis dans la bonne réponse est-il établi par une source citée ? Sinon, exige "a_verifier": true.
-   - Pour 'Choose two' : y a-t-il exactement 2 bonnes réponses, ni 1 ni 3 ? Les 2 bonnes réponses sont-elles distinctes (pas la même idée formulée deux fois) ? Un troisième choix défendable rend la question ambiguë : rejette.
+   - Pour 'Choose two' : y a-t-il exactement 2 bonnes réponses, ni 1 ni 3 ? Les 2 bonnes réponses sont-elles distinctes (pas la même idée formulée deux fois) ? Si ce sont deux solutions de rechange, chacune satisfait-elle seule toutes les exigences, et l'énoncé le demande-t-il clairement ? Un troisième choix défendable rend la question ambiguë : rejette.
    Si un de ces critères échoue, n'appelle PAS 'valider_et_publier' : consigne la critique.
    - La section et la difficulté sont-elles bien respectées ?
    - Les sources documentaires pointent-elles vers la documentation officielle Google ?
