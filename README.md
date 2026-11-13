@@ -2,11 +2,11 @@
 
 [![tests](https://github.com/sailwaelan-dotcom/paa-coach/actions/workflows/tests.yml/badge.svg)](https://github.com/sailwaelan-dotcom/paa-coach/actions/workflows/tests.yml)
 
-**as_of** : 2026-11-12 · **Statut** : projet de démonstration, figé. Déployé et vérifié sur Cloud Run le 29/10/2026 (critères 0 à 6 de la [spécification](docs/specification.md)). Les outils sont couverts par 69 tests unitaires, le comportement des agents par 8 cas d'évaluation `adk eval` (section 5.2).
+**as_of** : 2026-11-13 · **Statut** : projet de démonstration, figé. Déployé et vérifié sur Cloud Run le 29/10/2026 (critères 0 à 6 de la [spécification](docs/specification.md)). Les outils sont couverts par 69 tests unitaires, le comportement des agents par 8 cas d'évaluation `adk eval` (section 5.2).
 
 Un système multi-agents construit avec **Google Agent Development Kit (ADK 2.13.0)** en Python : un agent de triage, un coach qui fait rédiger puis contrôler des questions d'architecture par une boucle de deux agents, et un relecteur de code. Il tourne sur Cloud Run derrière Identity-Aware Proxy, avec filtrage Model Armor, traces OpenTelemetry et évaluation automatisée.
 
-**Origine** : je l'ai conçu pour préparer l'examen Google Cloud **« Professional Agentic Architect » (PAA)**, sorti à l'automne 2026, pour lequel il n'existait pas d'annales. Examen écrit réussi le 12/11/2026, en centre d'examen (résultat à confirmer par Google ; les labs pratiques restent à passer). Le dépôt ne contient aucune question de l'examen.
+**Origine** : je l'ai conçu pour préparer l'examen Google Cloud **« Professional Agentic Architect » (PAA)**, sorti à l'automne 2026, pour lequel il n'existait pas d'annales. Certification obtenue en novembre 2026 : examen écrit réussi le 12/11/2026 en centre d'examen, puis les deux labs pratiques. Le dépôt ne contient aucune question de l'examen ni aucun contenu des labs.
 
 **Méthode** : spécification et architecture rédigées par Souhail Chafai, code écrit par l'agent Antigravity, puis relu, corrigé et évalué avec Claude Code (tests unitaires, `adk eval`, vérifications en production).
 
